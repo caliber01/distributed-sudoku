@@ -1,12 +1,13 @@
-from common.eventemitter import EventEmitter
 from client.gui import UI
-from client.networking import ServerConnector
+from client.logic import ClientLogic
+from queue import Queue
 
 if __name__ == '__main__':
-    event_emitter = EventEmitter()
+    client_logic_queue = Queue()
+    gui_queue = Queue()
 
-    server_connector = ServerConnector(event_emitter)
-    ui = UI(event_emitter)
+    client_logic = ClientLogic(client_logic_queue, gui_queue)
+    ui = UI(gui_queue, client_logic_queue)
 
     ui.render_welcome()
 

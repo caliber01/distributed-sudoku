@@ -1,13 +1,22 @@
 import tkinter
 import client.events as events
+from common.listener import Listener, handler
 
 
-class UI(object):
+class UI(Listener):
+    """
+    Main class for user interface, runs in the main thread
+    """
 
-    def __init__(self, event_emitter):
-        self.event_emitter = event_emitter
+    def __init__(self, in_queue, out_channel):
+        """
+        :param in_queue: incoming messages queue
+        :param out_channel: messages queue to publish events for ClientLogic
+        """
+        super().__init__(in_queue)
+        self.out_channel = out_channel
 
     def render_welcome(self):
-        self.event_emitter.publish(events.SUBMIT_NICKNAME, "Mynickname")
+        self.out_channel.put((events.SUBMIT_NICKNAME, "Mynickname"))
 
 

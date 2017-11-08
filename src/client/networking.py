@@ -1,10 +1,11 @@
-import client.events as events
+import socket
 
 
-class ServerConnector(object):
-    def __init__(self, event_emitter):
-        self.event_emitter = event_emitter
-        event_emitter.subscribe(events.SUBMIT_NICKNAME, self.submit_nickname)
+class Networking(object):
+    def __init__(self, server):
+        self.server = server
 
-    def submit_nickname(self, nickname):
-        print(nickname)
+    def connect(self):
+        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.s.connect(self.server)
+
