@@ -1,5 +1,6 @@
 import socket
-from server.client_handler import ClientHandler
+from threading import Thread
+import server.client_handler
 
 class Server(object):
 
@@ -13,6 +14,7 @@ class Server(object):
         self.s.listen(10000)
         while True:
             client_socket, endpoint = self.s.accept()
-            # TODO Thread
-            handler = ClientHandler(client_socket)
+            handler = server.client_handler.ClientHandler(client_socket, endpoint)
+            t = Thread(target = handler.run)
+            t.start()
         s.close()
