@@ -28,9 +28,9 @@ class Listener(object):
         Run the Listener infinitely
         """
         while True:
-            event, params = self.in_queue.get()
+            event, args, kargs = self.in_queue.get()
             for event_handler in self.handlers[event]:
-                event_handler(params)
+                event_handler(*args, **kargs)
 
 
 

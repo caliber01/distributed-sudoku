@@ -40,6 +40,8 @@ class ClientLogic(Listener):
             self._networking.connect()
         except Exception as e:
             logger.error(e)
-            self._out_queue.put(events.ERROR_CONNECTING_TO_SERVER)
+            self._out_queue.publish(events.ERROR_CONNECTING_TO_SERVER)
+            return
+        self._out_queue.publish(events.ERROR_CONNECTING_TO_SERVER)
 
 

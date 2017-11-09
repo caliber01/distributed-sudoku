@@ -17,6 +17,6 @@ class UI(Listener):
         self.out_channel = out_channel
 
     def render_welcome(self):
-        self.out_channel.put((events.SUBMIT_NICKNAME, "Mynickname"))
+        self.out_channel.publish(events.SUBMIT_NICKNAME, "Mynickname")
 
 
