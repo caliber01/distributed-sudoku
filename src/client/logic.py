@@ -3,6 +3,10 @@ import common.protocol as protocol
 import types
 from common.listener import Listener, handler
 from threading import Thread
+from client.networking import Networking
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ClientLogic(Listener):
@@ -16,20 +20,26 @@ class ClientLogic(Listener):
         :param out_queue: queue to publish events for GUI
         """
         super().__init__(in_queue)
-        self.out_queue = out_queue
-        self.session = {}
+        self._out_queue = out_queue
+        self._session = {}
 
-        self.thread = Thread(target=self.run)
-        self.thread.start()
+        self._thread = Thread(target=self.run)
+        self._thread.start()
+        self._networking = None
 
     @handler(events.SUBMIT_NICKNAME)
     def submit_nickname(self, nickname):
-        self.session['nickname'] = nickname
-        print(nickname)
+        self._session['nickname'] = nickname
+        logger.info(nickname)
 
     @handler(events.CONNECT_TO_SERVER)
-    def connect_to_server(self, address, port):
-        self.session['server'] = (address, port)
-
+    def connect_to_server(self, server):
+        self._session['server'] = server
+        self._networking = Networking(server)
+        try:
+            self._networking.connect()
+        except Exception as e:
+            logger.error(e)
+            self._out_queue.put(events.ERROR_CONNECTING_TO_SERVER)
 
 

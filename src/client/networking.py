@@ -1,4 +1,7 @@
 import socket
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Networking(object):
@@ -8,4 +11,5 @@ class Networking(object):
     def connect(self):
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.connect(self.server)
+
 
