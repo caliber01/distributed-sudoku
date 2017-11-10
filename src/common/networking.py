@@ -2,7 +2,6 @@
 Module to abstract networking operations, data representation
 Message is as tring of format {length_of_message}{body}
 """
-import common.protocol as protocol
 import json
 
 
