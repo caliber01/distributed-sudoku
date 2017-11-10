@@ -1,6 +1,5 @@
 from client.gui import UI
 from client.logic import ClientLogic
-from queue import Queue
 import client.events as events
 import common.protocol as protocol
 from common.eventqueue import EventQueue

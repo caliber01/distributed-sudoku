@@ -1,4 +1,4 @@
-import tkinter
+import Tkinter
 import client.events as events
 from common.listener import Listener, handler
 
@@ -13,7 +13,7 @@ class UI(Listener):
         :param in_queue: incoming messages queue
         :param out_channel: messages queue to publish events for ClientLogic
         """
-        super().__init__(in_queue)
+        super(UI, self).__init__(in_queue)
         self.out_channel = out_channel
 
     def render_welcome(self):

@@ -1,6 +1,5 @@
 import client.events as events
 import common.protocol as protocol
-import types
 from common.listener import Listener, handler
 from threading import Thread
 from client.networking import Networking
@@ -19,13 +18,13 @@ class ClientLogic(Listener):
         :param in_queue: queue to subscribe to events (Subscription done in Listener baseclass)
         :param out_queue: queue to publish events for GUI
         """
-        super().__init__(in_queue)
+        super(ClientLogic, self).__init__(in_queue)
         self._out_queue = out_queue
         self._session = {}
 
         self._thread = Thread(target=self.run)
         self._thread.start()
-        self._networking = None
+        self._networking = Networking()
 
     @handler(events.SUBMIT_NICKNAME)
     def submit_nickname(self, nickname):
@@ -35,13 +34,20 @@ class ClientLogic(Listener):
     @handler(events.CONNECT_TO_SERVER)
     def connect_to_server(self, server):
         self._session['server'] = server
-        self._networking = Networking(server)
         try:
-            self._networking.connect()
+            self._networking.connect(server)
         except Exception as e:
             logger.error(e)
             self._out_queue.publish(events.ERROR_CONNECTING_TO_SERVER)
             return
         self._out_queue.publish(events.ERROR_CONNECTING_TO_SERVER)
+
+    @handler(events.LOAD_ROOMS)
+    def load_rooms(self):
+        response, raw_rooms = self._networking.request(protocol.REQUEST_ROOMS)
+        if response != protocol.RESPONSE_OK:
+            self._out_queue.publish(events.ERROR_OCCURRED)
+            return
+        self._out_queue.publish(events.ROOMS_LOADED, rooms)
 
 
