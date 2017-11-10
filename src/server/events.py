@@ -1,1 +1,0 @@
-MESSAGE = "print_message"
