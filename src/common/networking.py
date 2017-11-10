@@ -17,6 +17,7 @@ def request(sock, request_type, **kargs):
     :return: response as dictionary
     """
     body = json.dumps(kargs)
+    # TODO
     msg = protocol.MSG_SEP.join()
     sock.sendall(msg)
     return _recv(sock)
