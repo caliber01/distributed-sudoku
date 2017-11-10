@@ -1,7 +1,5 @@
 DEFAULT_PORT = 7878
 
-MSG_SEP = '~'
-
 REQUEST_ROOMS = '0'
 
 RESPONSE_OK = "1"
