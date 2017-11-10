@@ -2,7 +2,7 @@ import client.events as events
 import common.protocol as protocol
 from common.listener import Listener, handler
 from threading import Thread
-from client.networking import Networking
+from client.request_response import RequestResponseConnection
 import logging
 
 logger = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ class ClientLogic(Listener):
 
         self._thread = Thread(target=self.run)
         self._thread.start()
-        self._networking = Networking()
+        self._connection = RequestResponseConnection()
 
     @handler(events.SUBMIT_NICKNAME)
     def submit_nickname(self, nickname):
@@ -35,7 +35,7 @@ class ClientLogic(Listener):
     def connect_to_server(self, server):
         self._session['server'] = server
         try:
-            self._networking.connect(server)
+            self._connection.connect(server)
         except Exception as e:
             logger.error(e)
             self._out_queue.publish(events.ERROR_CONNECTING_TO_SERVER)
@@ -44,11 +44,19 @@ class ClientLogic(Listener):
 
     @handler(events.LOAD_ROOMS)
     def load_rooms(self):
-        response = self._networking.request(type=protocol.REQUEST_ROOMS)
+        response = self._connection.request(type=protocol.REQUEST_ROOMS)
         if response['type'] != protocol.RESPONSE_OK:
             self._out_queue.publish(events.ERROR_OCCURRED)
             return
         self._out_queue.publish(events.ROOMS_LOADED, response['rooms'])
+
+    @handler(events.CREATE_ROOM)
+    def create_room(self, **kargs):
+        response = self._connection.request(type=protocol.REQUEST_CREATE_ROOM, **kargs)
+        if response['type'] != protocol.RESPONSE_OK:
+            self._out_queue.publish(events.ERROR_OCCURRED)
+            return
+        self._out_queue.publish(events.ROOM_CREATED, **response)
 
 
     @handler(events.MESSAGE)

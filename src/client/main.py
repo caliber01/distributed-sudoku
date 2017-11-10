@@ -3,6 +3,7 @@ from client.logic import ClientLogic
 import client.events as events
 import common.protocol as protocol
 from common.eventqueue import EventQueue
+from client.notifications import NotificationsConnection
 
 if __name__ == '__main__':
     client_logic_queue = EventQueue()
@@ -10,6 +11,7 @@ if __name__ == '__main__':
 
     client_logic = ClientLogic(client_logic_queue, gui_queue)
     ui = UI(gui_queue, client_logic_queue)
+    notifications_connection = NotificationsConnection(client_logic_queue)
 
     ui.render_welcome()
 

@@ -4,7 +4,8 @@ import common.networking as networking
 
 logger = logging.getLogger(__name__)
 
-class Networking(object):
+
+class RequestResponseConnection(object):
     def __init__(self):
         self.server = None
         self.s = None
