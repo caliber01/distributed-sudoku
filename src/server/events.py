@@ -1,0 +1,1 @@
+MESSAGE = "print_message"

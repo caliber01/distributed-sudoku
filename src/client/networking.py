@@ -16,5 +16,3 @@ class Networking(object):
 
     def request(self, *args, **kargs):
         return networking.request(self.s, *args, **kargs)
-
-
