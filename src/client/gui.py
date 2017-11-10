@@ -9,5 +9,9 @@ class UI(object):
 
     def render_welcome(self):
         self.event_emitter.publish(events.SUBMIT_NICKNAME, "Mynickname")
+        self.event_emitter.publish(events.MESSAGE, "MESSAGE")
+        self.event_emitter.publish(events.MESSAGE, "MESSAGE")
+        self.event_emitter.publish(events.MESSAGE, "MESSAGE")
+        self.event_emitter.publish(events.MESSAGE, "MESSAGE")
 
 

@@ -1,4 +1,4 @@
-from server.server import Server
+from server.server_obj import Server
 
 if __name__ == '__main__':
     server = Server('127.0.0.1', 6345)
