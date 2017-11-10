@@ -14,5 +14,5 @@ class Networking(object):
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.connect(self.server)
 
-    def request(self, *args, **kargs):
-        return networking.request(self.s, *args, **kargs)
+    def request(self, type, **kargs):
+        return networking.request(self.s, type=type, **kargs)

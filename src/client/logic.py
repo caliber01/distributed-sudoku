@@ -51,3 +51,13 @@ class ClientLogic(Listener):
         self._out_queue.publish(events.ROOMS_LOADED, response['rooms'])
 
 
+    @handler(events.MESSAGE)
+    def message(self, message):
+        response = self._networking.request(type=protocol.PRINT_MESSAGE, message=message)
+        if response['type'] != protocol.RESPONSE_OK:
+            self._out_queue.publish(events.ERROR_OCCURRED)
+            return
+        #self._out_queue.publish(events.ROOMS_LOADED, response['rooms'])
+
+
+
