@@ -44,10 +44,10 @@ class ClientLogic(Listener):
 
     @handler(events.LOAD_ROOMS)
     def load_rooms(self):
-        response, raw_rooms = self._networking.request(protocol.REQUEST_ROOMS)
-        if response != protocol.RESPONSE_OK:
+        response = self._networking.request(type=protocol.REQUEST_ROOMS)
+        if response['type'] != protocol.RESPONSE_OK:
             self._out_queue.publish(events.ERROR_OCCURRED)
             return
-        self._out_queue.publish(events.ROOMS_LOADED, rooms)
+        self._out_queue.publish(events.ROOMS_LOADED, response['rooms'])
 
 
