@@ -21,7 +21,7 @@ class NotificationsConnection():
         self.notifications_socket = s.accept()
         s.close()
         while True:
-            notification = networking.recv(socket)
+            notification = networking.recv(self.notifications_socket)
             self.out_queue.publish(notification['type'], **notification)
 
 
