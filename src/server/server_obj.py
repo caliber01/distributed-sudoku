@@ -1,15 +1,21 @@
 import socket
 from threading import Thread
 from common.constants import MESSAGE_SIZE, CLIENT_PORT
-from common.messages import INIT_SESSION, SET_ID
 import server.client_handler
-import uuid
+from common.listener import  Listener
+from server.room_manager import RoomManager
 
-class Server(object):
+class Server(Listener):
     def __init__(self, ip, port):
         self.ip = ip
         self.port = port
         self.clients = {}
+        self.room_manager = RoomManager()
+
+
+    def create_room(self):
+        return 1
+
 
     def run(self):
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -17,7 +23,9 @@ class Server(object):
         self.s.listen(10000)
         while True:
             client_socket, endpoint = self.s.accept()
-            t = Thread(target = self.__process_client_request, args=(client_socket, endpoint))
+            client = server.client_handler.ClientHandler(client_socket, self.room_manager)
+            self.clients[id] = client
+            t = Thread(target = client.run)
             t.start()
         s.close()
 
@@ -32,18 +40,17 @@ class Server(object):
         s.close()
         if not len(message):
             return
-        parts = message.split(":")
-        if parts[0] not in self.clients and parts[1] == INIT_SESSION:
-            id = str(uuid.uuid1())
-            handler = server.client_handler.ClientHandler(id, endpoint)
-            self.clients[id] = handler
-            self.__set_client_id(endpoint[0], id)
-        else:
-            getattr(self.clients[parts[0]], parts[1])(parts[2:])
+        # parts = message.split(MSG_SEP)
+        # if parts[0] not in self.clients and parts[1] == INIT_SESSION:
+        #
+        #     handler = server.client_handler.ClientHandler(id, endpoint)
+        #     self.__set_client_id(endpoint[0], id)
+        # else:
+        #     getattr(self.clients[parts[0]], parts[1])(parts[2:])
 
 
     def __set_client_id(self, ip, id):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((ip, CLIENT_PORT))
-        s.send((SET_ID + ":" + id).encode())
+        #s.send((SET_ID + MSG_SEP + id).encode())
         s.close()

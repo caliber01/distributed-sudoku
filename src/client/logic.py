@@ -52,8 +52,8 @@ class ClientLogic(Listener):
         self._out_queue.publish(events.ROOMS_LOADED, response['rooms'])
 
     @handler(events.CREATE_ROOM)
-    def create_room(self, **kargs):
-        response = self._connection.request(type=protocol.REQUEST_CREATE_ROOM, **kargs)
+    def create_room(self, name, max_users):
+        response = self._connection.request(type=protocol.REQUEST_CREATE_ROOM, name = name, max_users = max_users)
         if response['type'] != protocol.RESPONSE_OK:
             self._out_queue.publish(events.ERROR_OCCURRED)
             return
