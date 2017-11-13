@@ -17,6 +17,7 @@ class NotificationsConnection():
 
         self.notifications_socket = None
         self._t = Thread(target=self.run)
+        self._t.start()
 
     def run(self):
         self.s.listen(1)
