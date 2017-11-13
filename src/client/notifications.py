@@ -11,15 +11,17 @@ class NotificationsConnection():
     """
     def __init__(self, out_queue):
         self.out_queue = out_queue
+        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.s.bind(('', 0))
+        self.port = self.s.getsockname()[1],
+
         self.notifications_socket = None
         self._t = Thread(target=self.run)
 
     def run(self):
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.bind(('127.0.0.1', protocol.DEFAULT_CLIENT_LISTENER_PORT))
-        s.listen(1)
-        self.notifications_socket = s.accept()
-        s.close()
+        self.s.listen(1)
+        self.notifications_socket = self.s.accept()
+        self.s.close()
         while True:
             notification = networking.recv(self.notifications_socket)
             self.out_queue.publish(notification['type'], **notification)

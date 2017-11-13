@@ -9,9 +9,9 @@ if __name__ == '__main__':
     client_logic_queue = EventQueue()
     gui_queue = EventQueue()
 
-    client_logic = ClientLogic(client_logic_queue, gui_queue)
-    ui = UI(gui_queue, client_logic_queue)
     notifications_connection = NotificationsConnection(client_logic_queue)
+    client_logic = ClientLogic(client_logic_queue, gui_queue, notifications_connection.port)
+    ui = UI(gui_queue, client_logic_queue)
 
     ui.render_welcome()
 

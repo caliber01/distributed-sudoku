@@ -13,7 +13,7 @@ class ClientLogic(Listener):
     Class to react on GUI events, call networking requests, notify GUI about new state
     Runs in separate thread
     """
-    def __init__(self, in_queue, out_queue):
+    def __init__(self, in_queue, out_queue, listening_port):
         """
         :param in_queue: queue to subscribe to events (Subscription done in Listener baseclass)
         :param out_queue: queue to publish events for GUI
@@ -21,6 +21,7 @@ class ClientLogic(Listener):
         super(ClientLogic, self).__init__(in_queue)
         self._out_queue = out_queue
         self._session = {}
+        self._listening_port = listening_port
 
         self._thread = Thread(target=self.run)
         self._thread.start()
@@ -35,7 +36,7 @@ class ClientLogic(Listener):
     def connect_to_server(self, server):
         self._session['server'] = server
         try:
-            self._connection.connect(server)
+            self._connection.connect(server, self._listening_port)
         except Exception as e:
             logger.error(e)
             self._out_queue.publish(events.ERROR_CONNECTING_TO_SERVER)
@@ -61,7 +62,7 @@ class ClientLogic(Listener):
 
     @handler(events.MESSAGE)
     def message(self, message):
-        response = self._networking.request(type=protocol.PRINT_MESSAGE, message=message)
+        response = self._connection.request(type=protocol.PRINT_MESSAGE, message=message)
         if response['type'] != protocol.RESPONSE_OK:
             self._out_queue.publish(events.ERROR_OCCURRED)
             return
