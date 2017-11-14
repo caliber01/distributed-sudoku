@@ -18,7 +18,7 @@ if __name__ == '__main__':
     client_logic_queue.publish(events.QUIT)
     notifications_connection_queue.publish(events.QUIT)
 
-    # TODO: remove hardcode
-    # client_logic_queue.publish(events.CONNECT_TO_SERVER, ("127.0.0.1", protocol.DEFAULT_PORT))
+    client_logic_queue.publish(events.CONNECT_TO_SERVER, ("127.0.0.1", protocol.DEFAULT_PORT))
+    client_logic_queue.publish(events.CREATE_ROOM, name="NAME", max_users = 120)
 
 

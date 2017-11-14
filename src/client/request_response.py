@@ -1,6 +1,7 @@
 import socket
 import logging
 import common.networking as networking
+from common.protocol import CLIENT_START_LISTEN
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +15,7 @@ class RequestResponseConnection(object):
         self.server = server
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.connect(self.server)
-        networking.send(self.s, port=local_listening_port)
+        networking.request(self.s, type=CLIENT_START_LISTEN, port=local_listening_port)
 
     def request(self, type, **kargs):
         return networking.request(self.s, type=type, **kargs)

@@ -20,8 +20,7 @@ class NotificationsConnection():
         self.out_queue = out_queue
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.bind(('', 0))
-        self.port = self.s.getsockname()[1],
-
+        self.port = self.s.getsockname()[1]
         self.notifications_socket = None
         self._t = Thread(target=self._run)
         self._t.start()
