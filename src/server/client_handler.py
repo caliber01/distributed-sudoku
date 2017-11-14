@@ -25,11 +25,13 @@ class ClientHandler(object):
         try:
             while True:
                 message = recv(self.socket)
+                self._logger.info("New request from client %s" % (self.name))
+                self._logger.info(message)
                 type = message['type']
                 for handler in self.handlers[type]:
                     handler(message)
-        except:
-            self._logger.debug("Exception occurs in client %s" % (self.name))
+        except Exception as e:
+            self._logger.exception("Exception occurs in client %s" % (self.name))
 
 
     @handler(PRINT_MESSAGE)
@@ -45,7 +47,7 @@ class ClientHandler(object):
 
     @handler(SET_SUDOKU_VALUE)
     def set_sudoku_value(self, args):
-        if self.room.set_value(args["x"], args["y"], args["value"], args["prev"]):
+        if self.room.set_value(**args):
             self.__send(RESPONSE_OK)
         else:
             self.__send(TOO_LATE)
@@ -63,8 +65,17 @@ class ClientHandler(object):
     def join_to_room(self, args):
         room = self.room_manager.get_room_by_id(args["id"])
         if room != None:
-            room.add_client(self)
-            self.__send(RESPONSE_OK)
+            try:
+                room.add_client(self)
+                if room.game_started:
+                    self.__send(RESPONSE_OK, started=True, matrix=str(room.unsolved))
+                else:
+                    names = []
+                    for user in room.users:
+                        names.append(user.name)
+                    self.__send(RESPONSE_OK, started=False, players=names, name=room.name, max=room.max_users, need_users=(room.max_users - len(names)))
+            except:
+                self.__send(TOO_LATE)
         else:
             self.__send(NOT_FOUND)
 
@@ -81,7 +92,7 @@ class ClientHandler(object):
             handler(**args)
 
     @handler(GET_ROOMS)
-    def get_available_rooms(self):
+    def get_available_rooms(self, args):
         rooms = []
         for room in self.room_manager.get_available_rooms():
             rooms.append({"name": room.name, "max": room.max_users, "current": len(room.users), "id": room.id})
@@ -107,6 +118,13 @@ class ClientHandler(object):
     @handler(SUDOKU_SOLVED)
     def __sudoku_solved(self, **kargs):
         response = request(self.s_to_client, type=SUDOKU_SOLVED, **kargs)
+        # TODO Process error
+        if response['type'] != RESPONSE_OK:
+            return
+
+    @handler(SUDOKU_CHANGED)
+    def __sudoku_solved(self, **kargs):
+        response = request(self.s_to_client, type=SUDOKU_CHANGED, **kargs)
         # TODO Process error
         if response['type'] != RESPONSE_OK:
             return

@@ -60,11 +60,23 @@ class ClientLogic(Listener):
 
     @handler(events.LOAD_ROOMS)
     def load_rooms(self):
-        response = self._connection.request(type=protocol.REQUEST_ROOMS)
+        response = self._connection.request(type=protocol.GET_ROOMS)
         if response['type'] != protocol.RESPONSE_OK:
             self._out_queue.publish(events.ERROR_OCCURRED)
             return
         self._out_queue.publish(events.ROOMS_LOADED, response['rooms'])
+
+    @handler(events.JOIN_GAME)
+    def join_game(self, id):
+        response = self._connection.request(type=protocol.JOIN_ROOM, id=id)
+        # TODO
+        if response['type'] != protocol.RESPONSE_OK:
+            self._out_queue.publish(events.ERROR_OCCURRED)
+            return
+        if response["started"]:
+            pass
+        else:
+            self._out_queue.publish(events.ROOM_JOINED, **response)
 
     @handler(events.CREATE_ROOM)
     def create_room(self, name, max_users):
@@ -72,8 +84,9 @@ class ClientLogic(Listener):
         if response['type'] != protocol.RESPONSE_OK:
             self._out_queue.publish(events.ERROR_OCCURRED)
             return
+        logger.info('Room created')
+        self._session['room_name'] = response['name']
         self._out_queue.publish(events.ROOM_CREATED, **response)
-
 
     @handler(events.MESSAGE)
     def message(self, message):
@@ -81,7 +94,18 @@ class ClientLogic(Listener):
         if response['type'] != protocol.RESPONSE_OK:
             self._out_queue.publish(events.ERROR_OCCURRED)
             return
-        #self._out_queue.publish
+
+    @handler(events.CELL_EDITED)
+    def cell_edited(self, square, prev_value, new_value):
+        x = ord(square[0]) - ord('A')
+        y = int(square[1]) - 1
+
+        response = self._connection.request(type=protocol.SET_SUDOKU_VALUE,
+                                            name=self._session['room_name'],
+                                            x=x, y=y, prev=prev_value, value=new_value)
+        if response['type'] != protocol.RESPONSE_OK:
+            self._out_queue.publish(events.ERROR_OCCURRED)
+            return
 
     def __set_name_request(self):
         response = self._connection.request(type=protocol.SET_NAME, name=self._session['nickname'])

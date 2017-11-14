@@ -4,8 +4,15 @@ import client.sudoku as sudoku
 
 
 class Board(Frame):
-    def create_widgets(self, raw_matrix):
-        matrix = sudoku.parse_grid(raw_matrix)
+    def __init__(self, raw_matrix, on_edit_cell, master=None):
+        Frame.__init__(self, master)
+        self.on_edit_cell = on_edit_cell
+        self.grid(row=0, column=0)
+        self.square_vars = {}
+        self.matrix = sudoku.parse_grid(raw_matrix)
+        self.create_widgets()
+
+    def create_widgets(self):
         rows = ['ABC', 'DEF', 'GHI']
         cols = ['123', '456', '789']
         subgrid_squares = [sudoku.product(rs, cs) for rs in rows for cs in cols]
@@ -24,18 +31,29 @@ class Board(Frame):
         for i in range(9):
             f = Frame(self, borderwidth=10, relief=GROOVE)
             for j in range(9):
-                e = Entry(f, justify='center', width=4, fg='black', validate='all', validatecommand=(validate_command, '%P'))
-                square_value = matrix[subgrid_squares[i][j]]
+                square = subgrid_squares[i][j]
+                square_value = self.matrix[square]
+                common_args = { 'justify': 'center', 'width': 4, 'fg': 'black', 'validate': 'all', 'validatecommand': (validate_command, '%P') }
                 if square_value != '0':
+                    e = Entry(f, **common_args)
                     e.insert(0, square_value)
                     e.config(state=DISABLED)
+                else:
+                    var = StringVar()
+                    var.trace('w', self._get_cell_edit_handler(square))
+                    self.square_vars[square] = var
+                    e = Entry(f, textvariable=var, **common_args)
                 e.grid(row=j // 3, column=j % 3, padx=5, pady=5, ipady=10)
             f.grid(row=i // 3, column=i % 3, padx=5, pady=5)
 
-    def __init__(self, matrix, master=None):
-        Frame.__init__(self, master)
-        self.create_widgets(matrix)
-        self.grid(row=0, column=0)
+    def _get_cell_edit_handler(self, square):
+        def handler(*args):
+            self.on_edit_cell(square, int(self.matrix[square]), int(self.square_vars[square].get()))
+        return handler
+
+    def update_cell(self, x, y, value):
+        square = chr(x + ord('A')) + str(y+1)
+        self.square_vars[square].set(value)
 
 
 full_matrix = """
