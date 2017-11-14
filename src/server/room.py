@@ -58,7 +58,7 @@ class Room(object):
         else:
             self.__scores[name] -= 1
         self.__sudoku.unsolved[x][y] = value
-        self.__send_notification(SUDOKU_CHANGED, x=x, y=y, value=value)
+        self.__send_notification(SUDOKU_CHANGED, x=x, y=y, value=value, ignore=self)
 
         solved = True
         for i in range(9):
