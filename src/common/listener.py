@@ -23,14 +23,10 @@ class Listener(object):
             if callable(attr) and hasattr(attr, 'handled_event'):
                 self.handlers[attr.handled_event].append(attr)
 
-    def run(self):
-        """
-        Run the Listener infinitely
-        """
-        while True:
-            event, args, kargs = self.in_queue.get()
-            for event_handler in self.handlers[event]:
-                event_handler(*args, **kargs)
+    def handle_event(self, block):
+        event, args, kargs = self.in_queue.get(block)
+        for event_handler in self.handlers[event]:
+            event_handler(*args, **kargs)
 
 
 
