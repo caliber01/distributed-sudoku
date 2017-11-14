@@ -97,6 +97,14 @@ class ClientHandler(object):
         if response['type'] != RESPONSE_OK:
             return
 
+    @handler(PEOPLE_CHANGED)
+    def __people_changed(self, **kargs):
+        response = request(self.s_to_client, type=PEOPLE_CHANGED, **kargs)
+        # TODO Process error
+        if response['type'] != RESPONSE_OK:
+            return
+
+
     def __send(self, type, **kargs):
         try:
             send(self.socket, type=type, **kargs)

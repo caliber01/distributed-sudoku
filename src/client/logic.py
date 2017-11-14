@@ -88,6 +88,3 @@ class ClientLogic(Listener):
         if response['type'] != protocol.RESPONSE_OK:
             self._out_queue.publish(events.ERROR_OCCURRED)
             return
-
-
-
