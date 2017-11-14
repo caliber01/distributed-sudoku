@@ -12,37 +12,32 @@ class Join(Frame):
         self.grid(row=0, column=3)
         self.nickname = None
 
-    def update(self, rooms):
+    def update_rooms(self, rooms):
         self.rooms = rooms
         self._update_rooms_list()
 
     def _update_rooms_list(self):
-        if self._game_list.size():
-            self._game_list.delete(first=0, last=self._game_list.size())
+        if self._rooms_list.size():
+            self._rooms_list.delete(first=0, last=self._rooms_list.size())
             self.id = []
-        i = 0
         for room in self.rooms:
-            self._game_list.insert(i, 'Game ' + room["name"] + ' (players needed: ' + str(room["max"] - room["current"]) + ')')
+            self._rooms_list.insert(END, 'Game ' + room["name"] + ' (players needed: ' + str(room["max"] - room["current"]) + ')')
             self.id.append(room["id"])
-            i += 1
 
 
     def create_widgets(self):
-        #self._label = Label(self, text='Choose the game')
-        #self._label.grid(row=0)
-
         self._label = Label(self, text='')
         self._label.grid(row=2)
 
-        self._game_list = Listbox(self, height=5, selectmode=SINGLE, yscrollcommand=True, xscrollcommand=True)
+        self._rooms_list = Listbox(self, height=5, selectmode=SINGLE, yscrollcommand=True, xscrollcommand=True)
         self._update_rooms_list()
-        self._game_list.grid(row=2, ipadx=100, pady=15, padx=10)
+        self._rooms_list.grid(row=2, ipadx=100, pady=15, padx=10)
 
         self._button_join = Button(self, text='Join to game', command=self.join)
         self._button_join.grid(row=4, pady=10)
 
     def join(self):
-        index = self._game_list.curselection()[0]
+        index = self._rooms_list.curselection()[0]
         self.game_id = self.id[index]
         self.event_generate(JOIN_GAME)
 
