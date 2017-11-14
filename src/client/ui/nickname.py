@@ -1,18 +1,28 @@
 from Tkinter import *
 import ttk
 import tkMessageBox
+import os
 
 SUBMIT = '<<submit>>'
 
 #GREETING = "Create or choose one"
 
+#validation name (not longer than 8 alphanumeric characters and without empty strings/spaces)
 def validate_gamename(name):
-    return bool(re.match(r'^[a-zA-Z0-9_]*$', name))
+    return bool(re.match(r'^[a-zA-Z0-9_]*$', name)) and len(name) < 9
+
 
 class Nickname(Frame):
     def __init__(self, master=None, **kw):
         Frame.__init__(self, master, **kw)
-        self.nicks = {'Bob', 'Alice', 'andr', 'z3jdv', '4uf', 'etrv'}
+        self.nicks = set()
+        #read unique nicknames from doc
+
+        with open('nicknames.txt', 'w+') as file:
+            for row in file:
+                word = row.strip()
+                if word not in self.nicks:
+                    self.nicks.add(word)
         self.create_widgets()
         self.grid(row=0, column=0, padx=40, pady=40)
         self.nickname = None
@@ -37,7 +47,12 @@ class Nickname(Frame):
         if name == '':
             tkMessageBox.showinfo('Nickname', 'Please choose your nickname')
             return
-        self.nicks.add(name)
+        #write nickname only it is unique
+        if name not in self.nicks:
+            self.nicks.add(name)
+            with open('nicknames.txt', "a") as f:
+                f.write(os.linesep + name)
+
         self.nickname = name
         self.event_generate(SUBMIT)
 
