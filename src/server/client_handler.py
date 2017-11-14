@@ -73,7 +73,7 @@ class ClientHandler(object):
                     names = []
                     for user in room.users:
                         names.append(user.name)
-                    self.__send(RESPONSE_OK, started=False, players=names, room_name=room.name, max_users=room.max_users, need_users=(room.max_users - len(names)))
+                    self.__send(RESPONSE_OK, started=False, players=names, name=room.name, max=room.max_users, need_users=(room.max_users - len(names)))
             except:
                 self.__send(TOO_LATE)
         else:
