@@ -1,7 +1,10 @@
 from Tkinter import *
 import ttk
+import tkMessageBox
 
 SUBMIT = '<<submit>>'
+
+GREETING = "Create or choose one"
 
 
 class Nickname(Frame):
@@ -16,18 +19,18 @@ class Nickname(Frame):
         self._label = Label(self, text='Welcome to Sudoku game')
         self._label.grid(row=0, columnspan=2, rowspan=2)
 
-        self._label = Label(self, text='')
-        self._label.grid(row=2)
-
         self._nickname = ttk.Combobox(self, state='normal', values=list(self.nicks))
-        self._nickname.set("Create or choose one")
-        self._nickname.grid(row=3, ipadx=10, ipady=10)
+        self._nickname.set(GREETING)
+        self._nickname.grid(row=3, ipadx=10, ipady=10, pady=10)
 
         self._button_continue = Button(self, text='Continue', command=self.submit)
         self._button_continue.grid(row=4, pady=20)
 
     def submit(self):
         name = self._nickname.get()
+        if name == GREETING:
+            tkMessageBox.showinfo('Nickname', 'Please choose your nickname')
+            return
         self.nicks.add(name)
         self.nickname = name
         self.event_generate(SUBMIT)

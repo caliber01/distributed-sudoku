@@ -1,11 +1,21 @@
 import client.events as events
 from common.listener import Listener, handler
 import tkFont
-from Tkinter import Tk
+from Tkinter import Tk, Toplevel
 import client.ui.nickname as nickname
+<<<<<<< HEAD
 import client.ui.join_game as join_game
+=======
+import client.ui.connect as connect
+import client.ui.connecting as connecting
+import client.ui.dashboard as dashboard
+>>>>>>> abbd6c92e83933c4e9f7639e87cc983ce7963d4b
 from Queue import Empty
+import tkMessageBox
 
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class UI(Listener):
@@ -23,11 +33,16 @@ class UI(Listener):
         root = Tk()
         self.root = root
         root.title('Distributed Sudoku')
+        self.nickname_frame = None
+        self.connect_frame = None
+        self.connecting_msg = None
+        self.dashboard_frame = None
+        self.message = None
 
     def render_welcome(self):
         self._setup_font()
-        self.frame = nickname.Nickname(master=self.root)
-        self.frame.bind(nickname.SUBMIT, self._connect)
+        self.nickname_frame = nickname.Nickname(master=self.root)
+        self.nickname_frame.bind(nickname.SUBMIT, self._handle_nickname)
 
         self.root.after(100, self._check_events)
         self.root.mainloop()
@@ -45,8 +60,15 @@ class UI(Listener):
         default_font.configure(size=14)
         self.root.option_add("*Font", default_font)
 
-    def _connect(self, event):
-        print(self.frame.nickname)
+    def _handle_nickname(self, event):
+        self.out_queue.publish(events.SUBMIT_NICKNAME, self.nickname_frame.nickname)
+        self.nickname_frame.destroy()
+        self.connect_frame = connect.Connect(master=self.root)
+        self.connect_frame.bind(connect.CONNECT, self._handle_connect)
+
+    def _handle_connect(self, event):
+        self.out_queue.publish(events.CONNECT_TO_SERVER, (self.connect_frame.address, int(self.connect_frame.port)))
+        self.connecting_msg = connecting.Connecting('Connecting', 'Connecting to server...')
 
     def _check_events(self):
         try:
@@ -55,6 +77,23 @@ class UI(Listener):
             pass
         self.root.after(100, self._check_events)
 
+    def _handle_create_game(self, event):
+        self.out_queue.publish(events.CREATE_ROOM, name=self.dashboard_frame.name, max_users=self.dashboard_frame.max_people)
+        self.connecting_msg = connecting.Connecting('New game', 'Creating new game...')
+
     @handler(events.ERROR_CONNECTING_TO_SERVER)
-    def error_connecting_to_server(self, e):
-        print(e)
+    def error_connecting_to_server(self):
+        self.connecting_msg.destroy()
+        tkMessageBox.showerror("Connection error", "Error connecting to server")
+
+    @handler(events.CONNECTED_TO_SERVER)
+    def connected_to_server(self):
+        self.connecting_msg.destroy()
+        self.connect_frame.destroy()
+        self.dashboard_frame = dashboard.Dashboard(master=self.root)
+        self.dashboard_frame.bind(dashboard.CREATE_GAME, self._handle_create_game)
+
+    @handler(events.ROOM_CREATED)
+    def room_created(self, **kwargs):
+        self.connecting_msg.destroy()
+        print(kwargs)
