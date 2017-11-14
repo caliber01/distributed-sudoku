@@ -61,7 +61,8 @@ class NotificationsConnection():
                 break
             try:
                 notification = networking.recv(self.notifications_socket)
-                logger.info('New notification: ', notification)
+                logger.info('New notification')
+                logger.info(notification)
                 self.out_queue.publish(notification['type'], **notification)
                 networking.send(self.notifications_socket, type=protocol.RESPONSE_OK)
             except socket.timeout:

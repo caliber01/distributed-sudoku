@@ -10,7 +10,7 @@ if __name__ == '__main__':
     client_logic_queue = EventQueue()
     gui_queue = EventQueue()
 
-    notifications_connection = NotificationsConnection(notifications_connection_queue, client_logic_queue)
+    notifications_connection = NotificationsConnection(notifications_connection_queue, gui_queue)
     client_logic = ClientLogic(client_logic_queue, gui_queue, notifications_connection.port)
     ui = UI(gui_queue, client_logic_queue)
 

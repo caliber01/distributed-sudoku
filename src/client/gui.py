@@ -8,6 +8,7 @@ import client.ui.connecting as connecting
 import client.ui.dashboard as dashboard
 import client.ui.join_game as join_game
 import client.ui.waiting_list as waiting_list
+import client.ui.board as board
 import common.protocol as protocol
 
 from Queue import Empty
@@ -39,6 +40,8 @@ class UI(Listener):
         self.dashboard_frame = None
         self.message = None
         self.waiting_frame = None
+        self.board_frame = None
+        self.session = {}
 
     def render_welcome(self):
         self._setup_font()
@@ -60,6 +63,7 @@ class UI(Listener):
 
     def _handle_nickname(self, event):
         self.out_queue.publish(events.SUBMIT_NICKNAME, self.nickname_frame.nickname)
+        self.session['nickname'] = self.nickname_frame.nickname
         self.nickname_frame.destroy()
         self.connect_frame = connect.Connect(master=self.root)
         self.connect_frame.bind(connect.CONNECT, self._handle_connect)
@@ -95,12 +99,14 @@ class UI(Listener):
     def room_created(self, **room):
         self.connecting_msg.destroy()
         self.dashboard_frame.destroy()
-        self.waiting_frame = waiting_list.WaitingList(self.root, room)
+        self.waiting_frame = waiting_list.WaitingList(self.root, room, self.session['nickname'])
 
     @handler(protocol.PEOPLE_CHANGED)
     def people_changed(self, **kwargs):
         print(kwargs)
 
     @handler(protocol.START_GAME)
-    def start_game(self, **kwargs):
-        print(kwargs)
+    def start_game(self, **room):
+        print(room)
+        self.waiting_frame.destroy()
+        self.board_frame = board.Board(room['matrix'])
