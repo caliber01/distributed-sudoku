@@ -34,6 +34,9 @@ class ClientHandler(object):
             self._logger.exception("Exception occurs in client %s" % (self.name))
             if self.room != None:
                 self.room.remove_client(self)
+                if not len(self.room.users):
+                    self.room_manager.remove_room(self.room)
+                self.room = None
 
 
     @handler(PRINT_MESSAGE)
@@ -65,17 +68,17 @@ class ClientHandler(object):
 
     @handler(JOIN_ROOM)
     def join_to_room(self, args):
-        room = self.room_manager.get_room_by_id(args["id"])
-        if room != None:
+        self.room = self.room_manager.get_room_by_id(args["id"])
+        if self.room != None:
             try:
-                room.add_client(self)
-                if room.game_started:
+                self.room.add_client(self)
+                if self.room.game_started:
                     self.__send(RESPONSE_OK, started=True)
                 else:
                     names = []
-                    for user in room.users:
+                    for user in self.room.users:
                         names.append(user.name)
-                    self.__send(RESPONSE_OK, started=False, users=names, name=room.name, max=room.max_users, need_users=(room.max_users - len(names)))
+                    self.__send(RESPONSE_OK, started=False, users=names, name=self.room.name, max=self.room.max_users, need_users=(self.room.max_users - len(names)))
             except:
                 self.__send(TOO_LATE)
         else:

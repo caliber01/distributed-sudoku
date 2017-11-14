@@ -20,3 +20,6 @@ class RoomManager(object):
                 room = r
                 break
         return room
+
+    def remove_room(self, room):
+        self.__rooms.remove(room)
