@@ -4,6 +4,8 @@ from client.ui.join_game import Join
 
 CREATE_GAME = '<<create-game>>'
 
+def validate_gamename(name):
+    return bool(re.match(r'^[a-zA-Z0-9_]*$', name))
 
 def validate_numberpeople(number):
     return not number or bool(re.match(r'^[1-8]+$', number)) and int(number) < 9
@@ -28,7 +30,8 @@ class Dashboard(Frame):
         self.name_lbl = Label(self.left_frame, text="Name:")
         self.name_lbl.grid(row=1, column=0, pady=20, padx=20)
 
-        self.name_entry = Entry(self.left_frame)
+        validate_gamename_command = self.register(validate_gamename)
+        self.name_entry = Entry(self.left_frame, validate='all', validatecommand=(validate_gamename_command, '%P'))
         self.name_entry.grid(row=1, column=1, columnspan=2)
 
         self.max_people_lbl = Label(self.left_frame, text="Max people:")
