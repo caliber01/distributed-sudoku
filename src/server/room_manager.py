@@ -10,5 +10,5 @@ class RoomManager(object):
         self.__rooms.append(room)
         return room
 
-    def get_rooms(self):
+    def get_available_rooms(self):
         return [room for room in self.__rooms if not room.full()]

@@ -20,8 +20,8 @@ class Server(Listener):
         self.logger.debug('Server socket bound on %s:%d' % self.s.getsockname())
         self.logger.info('Accepting requests on TCP %s:%d' % self.s.getsockname())
         self.s.listen(10000)
-        try:
-            while True:
+        while True:
+            try:
                 self.logger.debug('Awaiting requests ...')
                 client_socket, endpoint = self.s.accept()
                 self.logger.debug('Created cliend handler for  %s:%d' % client_socket.getsockname())
@@ -29,6 +29,6 @@ class Server(Listener):
                 self.clients[id] = client
                 t = Thread(target=client.run)
                 t.start()
-            s.close()
-        except e:
-            LOG.info('Exception occurs %s' % (s))
+            except:
+                self.logger.info('Exception occurs in main thread')
+        self.s.close()

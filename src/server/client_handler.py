@@ -8,7 +8,7 @@ import uuid
 
 class ClientHandler(object):
     def __init__(self, s, room_manager):
-        self.id = id = str(uuid.uuid1())
+        self.id = str(uuid.uuid1())
         self.socket = s
         self.s_to_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.handlers = defaultdict(list)
@@ -22,10 +22,14 @@ class ClientHandler(object):
 
     def run(self):
         while True:
-            message = recv(self.socket)
-            type = message['type']
-            for handler in self.handlers[type]:
-                handler(message)
+            try:
+                message = recv(self.socket)
+                type = message['type']
+                for handler in self.handlers[type]:
+                    handler(message)
+            except:
+                self.logger.debug("Exception occurs in client %s" % (self.name))
+
 
     @handler(PRINT_MESSAGE)
     def print_message(self, args):
@@ -43,7 +47,7 @@ class ClientHandler(object):
         room = self.room_manager.create_room(args["name"], args["max_users"])
         room.add_client(self)
         self.room = room
-        self.__send(RESPONSE_OK)
+        self.__send(RESPONSE_OK, name=room.name, max = room.max_users, current = len(room.users))
         print("room creted %s %d" % (room.name, room.max_users))
 
     @handler(GET_SCORE)
@@ -55,6 +59,15 @@ class ClientHandler(object):
         self.name = args["name"]
         self.__send(RESPONSE_OK)
 
+    @handler(JOIN_ROOM)
+    def join_to_room(self, args):
+        room = self.room_manager.get_room_by_id(args["id"])
+        if room != None:
+            room.add_client(self)
+            self.__send(RESPONSE_OK, name=room.name, max = room.max_users, current = len(room.users))
+        else:
+            self.__send(NOT_FOUND)
+
     def send_notification(self, type, **args):
         for handler in self.handlers[type]:
             handler(args)
@@ -62,8 +75,8 @@ class ClientHandler(object):
     @handler(GET_ROOMS)
     def get_available_rooms(self):
         rooms = []
-        for room in self.room_manager.get_rooms():
-            rooms.append({"name": room.name, "max": room.max_users, "current": len(room.users)})
+        for room in self.room_manager.get_available_rooms():
+            rooms.append({"name": room.name, "max": room.max_users, "current": len(room.users), "id": room.id})
         self.__send(RESPONSE_OK, rooms = rooms)
 
     def __request(self, type, **kargs):
@@ -80,4 +93,4 @@ class ClientHandler(object):
         try:
             send(self.socket, type=type, **kargs)
         except:
-            LOG.debug("Exception occurs in client %s" % (self.name))
+            self.logger.debug("Exception occurs in client %s" % (self.name))

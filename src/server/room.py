@@ -1,11 +1,13 @@
 from collections import defaultdict
 from common.protocol import *
 import threading
+import uuid
 
 class Room(object):
     def __init__(self, name, max_users, logger):
+        self.id = str(uuid.uuid1())
         self._logger = logger
-        LOG.info("Room \"%s\" created" % (name))
+        self._logger.info("Room \"%s\" created" % (name))
         self.lock = threading.Lock()
         self.name = name
         self.users = []
@@ -18,7 +20,6 @@ class Room(object):
     def full(self):
         return len(self.users) < self.max_users
 
-
     def add_client(self, client):
         self.lock.acuire()
         if not self.full():
@@ -30,7 +31,7 @@ class Room(object):
             self.__send_notification(START_GAME, matrix=str(self.__test_sudoku()))
             #self.__send_notification(START_GAME, matrix = str(self.__board))
         else:
-            self.__send_notification(PEOPLE_CHANGED,)
+            self.__people_changed_notification()
         self.lock.release()
 
 
