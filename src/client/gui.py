@@ -118,12 +118,13 @@ class UI(Listener):
         if self.board_frame:
             return
         self.waiting_frame = waiting_list.WaitingList(self.root, room, self.session['nickname'])
+        self.waiting_frame.update_users(room["users"])
 
     # Notifications from server
 
     @handler(protocol.PEOPLE_CHANGED)
     def people_changed(self, **kwargs):
-        print(kwargs)
+        self.waiting_frame.update_users(kwargs["users"])
 
     @handler(protocol.START_GAME)
     def start_game(self, **room):
