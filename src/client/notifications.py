@@ -36,7 +36,7 @@ class NotificationsConnection():
         logger.info('Shutting down notifications listener')
         if not self.notifications_socket:
             return
-        self.notifications_socket.shutdown()
+        self.notifications_socket.shutdown(socket.SHUT_RDWR)
         self.notifications_socket.close()
 
     def _run(self):
