@@ -3,6 +3,7 @@ from common.listener import Listener, handler
 import tkFont
 from Tkinter import Tk
 import client.ui.nickname as nickname
+import client.ui.join_game as join_game
 from Queue import Empty
 
 
@@ -27,6 +28,14 @@ class UI(Listener):
         self._setup_font()
         self.frame = nickname.Nickname(master=self.root)
         self.frame.bind(nickname.SUBMIT, self._connect)
+
+        self.root.after(100, self._check_events)
+        self.root.mainloop()
+
+    def render_join(self):
+        self._setup_font()
+        self.frame = join_game.Join(master=self.root)
+        self.frame.bind(join_game.JOIN, self._connect)
 
         self.root.after(100, self._check_events)
         self.root.mainloop()
