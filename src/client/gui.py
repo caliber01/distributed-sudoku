@@ -9,6 +9,7 @@ import client.ui.dashboard as dashboard
 import client.ui.join_game as join_game
 import client.ui.waiting_list as waiting_list
 import client.ui.board as board
+import client.ui.result_board as result_board
 import common.protocol as protocol
 
 from Queue import Empty
@@ -41,6 +42,7 @@ class UI(Listener):
         self.message = None
         self.waiting_frame = None
         self.board_frame = None
+        self.scores_frame = None
         self.session = {}
 
     def render_welcome(self):
@@ -94,10 +96,7 @@ class UI(Listener):
     def connected_to_server(self):
         self.connecting_msg.destroy()
         self.connect_frame.destroy()
-        self.dashboard_frame = dashboard.Dashboard(master=self.root)
-        self.dashboard_frame.bind(dashboard.CREATE_GAME, self._handle_create_game)
-        self.dashboard_frame.join_frame.bind(join_game.JOIN_GAME, self._handle_join)
-        self.out_queue.publish(events.LOAD_ROOMS)
+        self._show_dashboard()
 
     @handler(events.ROOMS_LOADED)
     def rooms_loaded(self, rooms):
@@ -122,6 +121,8 @@ class UI(Listener):
 
     @handler(protocol.PEOPLE_CHANGED)
     def people_changed(self, **kwargs):
+        if not self.waiting_frame:
+            return
         self.waiting_frame.update_users(kwargs["users"])
 
     @handler(protocol.START_GAME)
@@ -146,6 +147,19 @@ class UI(Listener):
         tkMessageBox.showinfo("Damn it!", "You seem to be too late on this cell")
 
     @handler(protocol.SUDOKU_SOLVED)
-    def sudoku_solved(self, **kwargs):
-        pass
+    def sudoku_solved(self, scores, **kwargs):
+        self.board_frame.destroy()
+        self.scores_frame = result_board.ResultBoard(scores, self.root)
+        self.scores_frame.bind(result_board.CLOSE, self._after_scores)
+
+    def _after_scores(self, event):
+        self.scores_frame.destroy()
+        self._show_dashboard()
+        self.out_queue.publish(events.GAME_ENDED)
+
+    def _show_dashboard(self):
+        self.dashboard_frame = dashboard.Dashboard(master=self.root)
+        self.dashboard_frame.bind(dashboard.CREATE_GAME, self._handle_create_game)
+        self.dashboard_frame.join_frame.bind(join_game.JOIN_GAME, self._handle_join)
+        self.out_queue.publish(events.LOAD_ROOMS)
 

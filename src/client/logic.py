@@ -110,3 +110,7 @@ class ClientLogic(Listener):
         if response['type'] != protocol.RESPONSE_OK:
             self._out_queue.publish(events.ERROR_OCCURRED)
             return
+
+    @handler(events.GAME_ENDED)
+    def game_ended(self):
+        del self._session['room_name']
