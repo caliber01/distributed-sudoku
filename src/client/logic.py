@@ -74,7 +74,6 @@ class ClientLogic(Listener):
             return
         if not response["started"]:
             self._out_queue.publish(events.ROOM_JOINED, **response)
-        self._session['room_name'] = response['name']
 
     @handler(events.CREATE_ROOM)
     def create_room(self, name, max_users):
@@ -83,7 +82,6 @@ class ClientLogic(Listener):
             self._out_queue.publish(events.ERROR_OCCURRED)
             return
         logger.info('Room created')
-        self._session['room_name'] = response['name']
         self._out_queue.publish(events.ROOM_CREATED, **response)
 
     @handler(events.CELL_EDITED)
@@ -91,9 +89,7 @@ class ClientLogic(Listener):
         x = ord(square[0]) - ord('A')
         y = int(square[1]) - 1
 
-        response = self._connection.request(type=protocol.SET_SUDOKU_VALUE,
-                                            name=self._session['room_name'],
-                                            x=x, y=y, prev=prev_value, value=new_value)
+        response = self._connection.request(type=protocol.SET_SUDOKU_VALUE, x=x, y=y, prev=prev_value, value=new_value)
         if response['type'] != protocol.RESPONSE_OK:
             self._out_queue.publish(events.ERROR_OCCURRED)
             return
@@ -111,4 +107,4 @@ class ClientLogic(Listener):
 
     @handler(events.GAME_ENDED)
     def game_ended(self):
-        del self._session['room_name']
+        pass

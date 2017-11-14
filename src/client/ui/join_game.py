@@ -1,5 +1,6 @@
 from Tkinter import *
 from common.protocol import GET_ROOMS
+import tkMessageBox
 
 JOIN_GAME = '<<join-game>>'
 
@@ -37,7 +38,11 @@ class Join(Frame):
         self._button_join.grid(row=4, pady=10)
 
     def join(self):
-        index = self._rooms_list.curselection()[0]
+        selection = self._rooms_list.curselection()
+        if not len(selection):
+            tkMessageBox.showerror("No room selected", "Please select a room")
+            return
+        index = selection[0]
         self.game_id = self.id[index]
         self.event_generate(JOIN_GAME)
 
