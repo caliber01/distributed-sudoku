@@ -1,8 +1,7 @@
 from Tkinter import *
-import ttk
+import tkFont
 
-JOIN = '<<join>>'
-
+JOIN_GAME = '<<join-game>>'
 
 class Join(Frame):
     def __init__(self, master=None, **kw):
@@ -18,7 +17,7 @@ class Join(Frame):
         self.need = []
         for i in range(len(self.name)):
             self.need.append(self.max[i] - self.current[i])
-        id = [43, 235]
+        self.id = [43, 235]
         return (self.name, self.need, self.id)
 
     def create_widgets(self):
@@ -40,7 +39,6 @@ class Join(Frame):
     def join(self):
         self.index = int(self.Game_list.curselection()[0])
         self.id_game = id[self.index]
-        self.event_generate(JOIN)
-
+        self.event_generate(JOIN_GAME)
 
 
