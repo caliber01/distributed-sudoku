@@ -22,7 +22,7 @@ class Join(Frame):
             self.id = []
         i = 0
         for room in self.rooms:
-            self._game_list.insert(i, 'Game: ' + room["name"] + ' (' + str(room["max"] - room["current"]) + ' players are needed)')
+            self._game_list.insert(i, 'Game ' + room["name"] + ' (players needed: ' + str(room["max"] - room["current"]) + ')')
             self.id.append(room["id"])
             i += 1
 
