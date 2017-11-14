@@ -29,8 +29,8 @@ class Board(Frame):
                 if square_value != '0':
                     e.insert(0, square_value)
                     e.config(state=DISABLED)
-                e.grid(row=j // 3, column=j % 3, padx=10, pady=10, ipady=20)
-            f.grid(row=i // 3, column=i % 3, padx=10, pady=10)
+                e.grid(row=j // 3, column=j % 3, padx=5, pady=5, ipady=10)
+            f.grid(row=i // 3, column=i % 3, padx=5, pady=5)
 
     def __init__(self, matrix, master=None):
         Frame.__init__(self, master)
