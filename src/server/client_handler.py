@@ -53,7 +53,7 @@ class ClientHandler(object):
 
     @handler(SET_SUDOKU_VALUE)
     def set_sudoku_value(self, args):
-        if self.room.set_value(**args):
+        if self.room.set_value(name=self.name, **args):
             self.__send(RESPONSE_OK)
         else:
             self.__send(TOO_LATE)
