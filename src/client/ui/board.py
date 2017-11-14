@@ -52,7 +52,7 @@ class Board(Frame):
         return handler
 
     def update_cell(self, x, y, value):
-        square = chr(x + ord('A')) + str(y)
+        square = chr(x + ord('A')) + str(y+1)
         self.square_vars[square].set(value)
 
 

@@ -36,7 +36,7 @@ class Room(object):
             self.game_started = True
             self.__send_notification(START_GAME, matrix=str(self.__sudoku.print_matrix()))
         else:
-            self.__people_changed_notification()
+            self.__people_changed_notification(ignore=client)
         self.lock.release()
 
     def remove_client(self, client):
@@ -51,6 +51,7 @@ class Room(object):
         self.lock.acquire()
 
         if self.__sudoku.unsolved[x][y] != prev:
+            self.lock.release()
             return False
         if self.__sudoku.check(x, y, value):
             self.__scores[name] += 1
@@ -58,7 +59,15 @@ class Room(object):
             self.__scores[name] -= 1
         self.__sudoku.unsolved[x][y] = value
         self.__send_notification(SUDOKU_CHANGED, x=x, y=y, value=value)
-        if (self.__sudoku.unsolved == self.__sudoku.solved).all():
+
+        solved = True
+        for i in range(9):
+            for j in range(9):
+                if self.__sudoku.unsolved[i][j] != self.__sudoku.solved[i][j]:
+                    solved = False
+            if not solved:
+                break
+        if solved:
             self.__send_notification(SUDOKU_SOLVED, scores=self.__scores)
         self.lock.release()
         return True
@@ -66,12 +75,14 @@ class Room(object):
     def get_score(self):
         return self.scores
 
-    def __people_changed_notification(self):
+    def __people_changed_notification(self, ignore=None):
         names = []
         for user in self.users:
             names.append(user.name)
-        self.__send_notification(PEOPLE_CHANGED, players=names, room_name=self.name, max_users=self.max_users, need_users=(self.max_users - len(names)))
+        self.__send_notification(PEOPLE_CHANGED, users=names, room_name=self.name, max_users=self.max_users, need_users=(self.max_users - len(names)), ignore=ignore)
 
-    def __send_notification(self, type, **kargs):
+    def __send_notification(self, type, ignore=None, **kargs):
         for user in self.users:
+            if user == ignore:
+                continue
             user.send_notification(type, **kargs)

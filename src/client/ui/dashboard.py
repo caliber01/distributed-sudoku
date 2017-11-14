@@ -14,7 +14,7 @@ class Dashboard(Frame):
     def __init__(self, master=None, **kw):
         Frame.__init__(self, master, **kw)
         self.create_widgets()
-        self.grid(row=0, column=0, padx=30, pady=30)
+        self.grid(row=0, column=0, padx=40, pady=40)
 
     def create_widgets(self):
         self.new_game_widgets()
@@ -46,13 +46,13 @@ class Dashboard(Frame):
 
     def join_game_widgets(self):
         self.connect_lbl = Label(self, text = "Join game")
-        self.connect_lbl.grid(row=0, column=2)
+        self.connect_lbl.grid(row=0, column=3, columnspan=3)
 
         self.right_frame = Frame(self, borderwidth=1, relief=SUNKEN)
-        self.right_frame.grid(row=1, column=2, padx=20, pady=20, ipadx=20, ipady=20)
+        self.right_frame.grid(row=1, column=3)
 
         self.join_frame = Join(self.right_frame)
-        self.join_frame.grid(row=2, column=2)
+        self.join_frame.grid(row=2, column=4)
 
 
     def create_game(self):

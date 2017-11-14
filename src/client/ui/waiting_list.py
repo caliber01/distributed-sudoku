@@ -8,6 +8,7 @@ class WaitingList(Frame):
     def __init__(self, master, room, nickname, **kw):
         Frame.__init__(self, master, **kw)
         self.room = room
+        self.nickname = nickname
 
         self.users_var = StringVar()
         self.users_var.set(nickname)

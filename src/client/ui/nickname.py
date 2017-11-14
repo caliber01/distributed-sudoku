@@ -4,9 +4,10 @@ import tkMessageBox
 
 SUBMIT = '<<submit>>'
 
-GREETING = "Create or choose one"
+#GREETING = "Create or choose one"
 
-
+def validate_gamename(name):
+    return bool(re.match(r'^[a-zA-Z0-9_]*$', name))
 
 class Nickname(Frame):
     def __init__(self, master=None, **kw):
@@ -17,19 +18,23 @@ class Nickname(Frame):
         self.nickname = None
 
     def create_widgets(self):
-        self._label = Label(self, text='Welcome to Sudoku game')
-        self._label.grid(row=0, columnspan=2, rowspan=2)
+        self._label = Label(self, text='Welcome to Sudoku game', font=4)
+        self._label.grid(row=0, columnspan=2)
 
-        self._nickname = ttk.Combobox(self, state='normal', values=list(self.nicks))
-        self._nickname.set(GREETING)
-        self._nickname.grid(row=3, ipadx=10, ipady=10, pady=10)
+        self._label = Label(self, text='Create or choose nickname')
+        self._label.grid(row=3, columnspan=2, rowspan=2)
+
+        validate_gamename_command = self.register(validate_gamename)
+        self._nickname = ttk.Combobox(self, state='normal', values=list(self.nicks), validate='all', validatecommand=(validate_gamename_command, '%P'))
+        #self._nickname.set(GREETING)
+        self._nickname.grid(row=5, ipadx=10, ipady=10, pady=10)
 
         self._button_continue = Button(self, text='Continue', command=self.submit)
-        self._button_continue.grid(row=4, pady=20)
+        self._button_continue.grid(row=6, pady=20)
 
     def submit(self):
         name = self._nickname.get()
-        if name == GREETING:
+        if name == '':
             tkMessageBox.showinfo('Nickname', 'Please choose your nickname')
             return
         self.nicks.add(name)

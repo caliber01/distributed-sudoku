@@ -73,7 +73,7 @@ class ClientHandler(object):
                     names = []
                     for user in room.users:
                         names.append(user.name)
-                    self.__send(RESPONSE_OK, started=False, players=names, name=room.name, max=room.max_users, need_users=(room.max_users - len(names)))
+                    self.__send(RESPONSE_OK, started=False, users=names, name=room.name, max=room.max_users, need_users=(room.max_users - len(names)))
             except:
                 self.__send(TOO_LATE)
         else:
@@ -118,6 +118,13 @@ class ClientHandler(object):
     @handler(SUDOKU_SOLVED)
     def __sudoku_solved(self, **kargs):
         response = request(self.s_to_client, type=SUDOKU_SOLVED, **kargs)
+        # TODO Process error
+        if response['type'] != RESPONSE_OK:
+            return
+
+    @handler(SUDOKU_CHANGED)
+    def __sudoku_solved(self, **kargs):
+        response = request(self.s_to_client, type=SUDOKU_CHANGED, **kargs)
         # TODO Process error
         if response['type'] != RESPONSE_OK:
             return
