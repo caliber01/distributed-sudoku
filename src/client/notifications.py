@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class NotificationsConnection():
     """
     Object that binds a socket to accept connection from server
-    The socket with server is receive-only
+    and listen to notifications
     """
     def __init__(self, in_queue, out_queue):
         self.in_queue = in_queue
