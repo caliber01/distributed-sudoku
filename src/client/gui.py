@@ -112,7 +112,8 @@ class UI(Listener):
 
     @handler(events.ROOMS_LOADED)
     def rooms_loaded(self, rooms):
-        self.dashboard_frame.join_frame.update(rooms)
+        if self.dashboard_frame:
+            self.dashboard_frame.join_frame.update_rooms(rooms)
 
     @handler(events.ROOM_CREATED)
     def room_created(self, **room):
@@ -194,4 +195,5 @@ class UI(Listener):
     def _destroy_dashboard(self):
         if self.dashboard_frame:
             self.dashboard_frame.destroy()
+            self.dashboard_frame = None
 
