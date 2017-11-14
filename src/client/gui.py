@@ -74,6 +74,9 @@ class UI(Listener):
         self.out_queue.publish(events.JOIN_GAME, game_id)
         self.connecting_msg = connecting.Connecting('Joining', 'Joinig to game...')
 
+    def _leave_room(self, event):
+        self.out_queue.publish(events.LEAVE_ROOM)
+
     def _check_events(self):
         try:
             self.handle_event(block=False)
@@ -98,6 +101,11 @@ class UI(Listener):
         self.connect_frame.destroy()
         self._show_dashboard()
 
+    @handler(events.ROOM_LEAVED)
+    def room_leaved(self):
+        self.waiting_frame.destroy()
+        self._show_dashboard()
+
     @handler(events.ROOMS_LOADED)
     def rooms_loaded(self, rooms):
         self.dashboard_frame.join_frame.update(rooms)
@@ -109,6 +117,7 @@ class UI(Listener):
         if self.board_frame:
             return
         self.waiting_frame = waiting_list.WaitingList(self.root, room, self.session['nickname'])
+        self.waiting_frame.bind(waiting_list.LEAVE_ROOM, self._leave_room)
 
     @handler(events.ROOM_JOINED)
     def room_joined(self, **room):
@@ -116,6 +125,7 @@ class UI(Listener):
         self.dashboard_frame.destroy()
         self.waiting_frame = waiting_list.WaitingList(self.root, room, self.session['nickname'])
         self.waiting_frame.update_users(room["users"])
+        self.waiting_frame.bind(waiting_list.LEAVE_ROOM, self._leave_room)
 
     # Notifications from server
 
