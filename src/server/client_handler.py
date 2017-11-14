@@ -25,11 +25,13 @@ class ClientHandler(object):
         try:
             while True:
                 message = recv(self.socket)
+                self._logger.info("New request from client %s" % (self.name))
+                self._logger.info(message)
                 type = message['type']
                 for handler in self.handlers[type]:
                     handler(message)
-        except:
-            self._logger.debug("Exception occurs in client %s" % (self.name))
+        except Exception as e:
+            self._logger.exception("Exception occurs in client %s" % (self.name))
 
 
     @handler(PRINT_MESSAGE)
@@ -45,7 +47,7 @@ class ClientHandler(object):
 
     @handler(SET_SUDOKU_VALUE)
     def set_sudoku_value(self, args):
-        if self.room.set_value(args["x"], args["y"], args["value"], args["prev"]):
+        if self.room.set_value(**args):
             self.__send(RESPONSE_OK)
         else:
             self.__send(TOO_LATE)

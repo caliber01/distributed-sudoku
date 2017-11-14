@@ -4,6 +4,10 @@ from common.protocol import *
 import threading
 import uuid
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class Room(object):
     def __init__(self, name, max_users, logger):
@@ -40,15 +44,16 @@ class Room(object):
         self.__people_changed_notification()
         self.lock.release()
 
-    def set_value(self, name, x, y, value, prev):
+    def set_value(self, name, x, y, value, prev, **kargs):
         self.lock.acquire()
-        if self.__sudoku[x, y] != prev:
+
+        if self.__sudoku.unsolved[x][y] != prev:
             return False
         if self.__sudoku.check(x, y, value):
             self.__scores[name] += 1
         else:
             self.__scores[name] += 1
-        self.__sudoku.unsolved[x, y] = value
+        self.__sudoku.unsolved[x][y] = value
         self.__send_notification(SUDOKU_CHANGED, x=x, y=y, value=value)
         self.lock.release()
         return True
