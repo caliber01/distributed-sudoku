@@ -51,6 +51,7 @@ class ClientLogic(Listener):
         self._session['server'] = server
         try:
             self._connection.connect(server, self._listening_port)
+            #self.__set_name_request()
         except Exception as e:
             logger.error(e)
             self._out_queue.publish(events.ERROR_CONNECTING_TO_SERVER)
@@ -80,7 +81,13 @@ class ClientLogic(Listener):
         if response['type'] != protocol.RESPONSE_OK:
             self._out_queue.publish(events.ERROR_OCCURRED)
             return
-        #self._out_queue.publish(events.ROOMS_LOADED, response['rooms'])
+        #self._out_queue.publish
+
+    def __set_name_request(self):
+        response = self._connection.request(type=protocol.SET_NAME, name=self._session['nickname'])
+        if response['type'] != protocol.RESPONSE_OK:
+            self._out_queue.publish(events.ERROR_OCCURRED)
+            return
 
 
 

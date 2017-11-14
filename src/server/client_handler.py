@@ -43,14 +43,6 @@ class ClientHandler(object):
         self.s_to_client.connect((self.socket.getpeername()[0], args["port"]))
         self.__send(RESPONSE_OK)
 
-    @handler(REQUEST_CREATE_ROOM)
-    def create_room(self, args):
-        room = self.room_manager.create_room(args["name"], args["max_users"])
-        room.add_client(self)
-        self.room = room
-        self.__send(RESPONSE_OK, name=room.name, max = room.max_users, current = len(room.users))
-        print("room creted %s %d" % (room.name, room.max_users))
-
     @handler(SET_SUDOKU_VALUE)
     def set_sudoku_value(self, args):
         if self.room.set_value(args["x"], args["y"], args["value"], args["prev"]):
@@ -72,9 +64,17 @@ class ClientHandler(object):
         room = self.room_manager.get_room_by_id(args["id"])
         if room != None:
             room.add_client(self)
-            self.__send(RESPONSE_OK, name=room.name, max = room.max_users, current = len(room.users))
+            self.__send(RESPONSE_OK, name=room.name, max = room.max_users, current = len(room.users), users=[user.name for user in room.users])
         else:
             self.__send(NOT_FOUND)
+
+    @handler(REQUEST_CREATE_ROOM)
+    def create_room(self, args):
+        room = self.room_manager.create_room(args["name"], args["max_users"])
+        room.add_client(self)
+        self.room = room
+        self.__send(RESPONSE_OK, name=room.name, max=room.max_users, current=len(room.users), users=[user.name for user in room.users])
+        print("room creted %s %d" % (room.name, room.max_users))
 
     def send_notification(self, type, **args):
         for handler in self.handlers[type]:
