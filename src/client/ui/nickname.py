@@ -15,7 +15,8 @@ class Nickname(Frame):
         Frame.__init__(self, master, **kw)
         self.nicks = set()
         #read unique nicknames from doc
-        with open('nicknames.txt') as file:
+
+        with open('nicknames.txt', 'w+') as file:
             for row in file:
                 word = row.strip()
                 if word not in self.nicks:
