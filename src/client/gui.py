@@ -1,7 +1,10 @@
-from Tkinter import *
-import ttk
 import client.events as events
 from common.listener import Listener, handler
+import tkFont
+from Tkinter import Tk
+import client.ui.nickname as nickname
+from Queue import Empty
+
 
 
 class UI(Listener):
@@ -16,51 +19,33 @@ class UI(Listener):
         """
         super(UI, self).__init__(in_queue)
         self.out_queue = out_queue
+        root = Tk()
+        self.root = root
+        root.title('Distributed Sudoku')
 
     def render_welcome(self):
-        self.out_queue.publish(events.SUBMIT_NICKNAME, "Create nickname")
+        self._setup_font()
+        self.frame = nickname.Nickname(master=self.root)
+        self.frame.bind(nickname.SUBMIT, self._connect)
+
+        self.root.after(100, self._check_events)
+        self.root.mainloop()
+
+    def _setup_font(self):
+        default_font = tkFont.nametofont("TkDefaultFont")
+        default_font.configure(size=14)
+        self.root.option_add("*Font", default_font)
+
+    def _connect(self, event):
+        print(self.frame.nickname)
+
+    def _check_events(self):
+        try:
+            self.handle_event(block=False)
+        except Empty:
+            pass
+        self.root.after(100, self._check_events)
 
     @handler(events.ERROR_CONNECTING_TO_SERVER)
-
     def error_connecting_to_server(self, e):
         print(e)
-
-def start_gui():
-
-    global nicks, root
-    nicks = ['Bob', 'Alice', 'andr', 'z3jdv', '4uf', 'etrv']
-    root = Tk()
-    root.title('Sudoku')
-    root.geometry("400x350")
-    New_nickname()
-
-    root.mainloop()
-
-class New_nickname():
-    def __init__(self, master=None):
-
-
-
-        self.label = Label(master, text='     Welcome to Sudoku game', font='sans 20')
-        self.label.grid(row=0, columnspan=2, rowspan=2)
-
-        self.label = Label(master, text='', font='sans 20')
-        self.label.grid(row=2)
-
-        self.nickname = ttk.Combobox(master, state='normal', values=list(set(nicks)))
-        self.nickname.place(relx=0.2, rely=0.2, height=24, width=250)
-
-        self.nickname.set("Create or choose one")
-
-        def get_name():
-            name = self.nickname.get()
-            nicks.insert(0, name)
-            print(nicks)
-            print(name)
-
-        self.button_create = Button(master, text='Get nickname', command=get_name)
-        self.button_create.place(relx=0.3, rely=0.35, height=30, width=150)
-
-
-if __name__ == '__main__':
-    start_gui()
