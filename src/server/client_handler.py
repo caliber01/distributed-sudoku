@@ -32,6 +32,8 @@ class ClientHandler(object):
                     handler(message)
         except Exception as e:
             self._logger.exception("Exception occurs in client %s" % (self.name))
+            if self.room != None:
+                self.room.remove_client(self)
 
 
     @handler(PRINT_MESSAGE)
@@ -68,7 +70,7 @@ class ClientHandler(object):
             try:
                 room.add_client(self)
                 if room.game_started:
-                    self.__send(RESPONSE_OK, started=True, matrix=str(room.unsolved))
+                    self.__send(RESPONSE_OK, started=True)
                 else:
                     names = []
                     for user in room.users:
