@@ -8,7 +8,8 @@ SUBMIT = '<<submit>>'
 class ResultBoard(Frame):
 	def __init__(self, master=None, **kw):
 		Frame.__init__(self, master, **kw)
-		self.nicks = [['Bob', 11], ['Alice', 6], ['andr', 3]]
+		players = [('Bob', 5), ('Alice', 6), ('andr', 3),]
+		self.nicks = sorted(players, key=lambda player: player[1], reverse=1)
 		self.create_widgets()
 		self.grid(row=0, column=0, padx=40, pady=40)
 
