@@ -5,6 +5,7 @@ from Tkinter import Tk, Toplevel
 import client.ui.nickname as nickname
 import client.ui.connect as connect
 import client.ui.connecting as connecting
+import client.ui.dashboard as dashboard
 from Queue import Empty
 import tkMessageBox
 
@@ -68,3 +69,5 @@ class UI(Listener):
     @handler(events.CONNECTED_TO_SERVER)
     def connected_to_server(self):
         self.connecting.destroy()
+        self.frame.destroy()
+        self.frame = dashboard.Dashboard(master=self.root)
