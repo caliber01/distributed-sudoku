@@ -73,7 +73,7 @@ class UI(Listener):
             self.handle_event(block=False)
         except Empty:
             pass
-        self.root.after(100, self._check_events)
+        self.root.after(1000, self._check_events)
 
     def _handle_create_game(self, event):
         self.out_queue.publish(events.CREATE_ROOM, name=self.dashboard_frame.name, max_users=self.dashboard_frame.max_people)

@@ -31,7 +31,6 @@ class WaitingList(Frame):
 
         self.users_list = Listbox(self, listvariable=self.users_var)
         self.users_list.grid(row=3, pady=20, ipadx=10, ipady=10)
-        self.users_list.insert(END, *self.room['users'])
 
         self.leave_btn = Button(self, text="Leave")
         self.leave_btn.grid(row=4, pady=10)
