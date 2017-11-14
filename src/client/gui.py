@@ -51,10 +51,13 @@ class UI(Listener):
         self.root.after(100, self._check_events)
         self.root.mainloop()
 
+
     def render_join(self):
         self._setup_font()
         self.frame = join_game.Join(master=self.root)
-        self.frame.bind(join_game.JOIN, self._connect)
+
+        self.frame.bind(join_game.JOIN_GAME, self._handle_join)
+        self.root.mainloop()
 
     def _setup_font(self):
         default_font = tkFont.nametofont("TkDefaultFont")
@@ -71,6 +74,10 @@ class UI(Listener):
     def _handle_connect(self, event):
         self.out_queue.publish(events.CONNECT_TO_SERVER, (self.connect_frame.address, int(self.connect_frame.port)))
         self.connecting_msg = connecting.Connecting('Connecting', 'Connecting to server...')
+
+    def _handle_join(self, event):
+        self.out_queue.publish(events.JOIN_GAME, self.id)
+        self.connecting_msg = connecting.Connecting('Joining', 'Joinig to game...')
 
     def _check_events(self):
         try:
@@ -96,6 +103,7 @@ class UI(Listener):
         self.connect_frame.destroy()
         self.dashboard_frame = dashboard.Dashboard(master=self.root)
         self.dashboard_frame.bind(dashboard.CREATE_GAME, self._handle_create_game)
+
 
     @handler(events.ROOM_CREATED)
     def room_created(self, **room):
@@ -128,3 +136,4 @@ class UI(Listener):
     @handler(protocol.TOO_LATE)
     def too_late(self):
         tkMessageBox.showinfo("Damn it!", "You seem to be too late on this cell")
+

@@ -43,8 +43,8 @@ class Board(Frame):
                     var.trace('w', self._get_cell_edit_handler(square))
                     self.square_vars[square] = var
                     e = Entry(f, textvariable=var, **common_args)
-                e.grid(row=j // 3, column=j % 3, padx=10, pady=10, ipady=20)
-            f.grid(row=i // 3, column=i % 3, padx=10, pady=10)
+                e.grid(row=j // 3, column=j % 3, padx=5, pady=5, ipady=10)
+            f.grid(row=i // 3, column=i % 3, padx=5, pady=5)
 
     def _get_cell_edit_handler(self, square):
         def handler(*args):

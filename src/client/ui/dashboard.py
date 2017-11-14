@@ -5,6 +5,9 @@ from client.ui.join_game import Join
 CREATE_GAME = '<<create-game>>'
 
 
+def validate_numberpeople(number):
+    return not number or bool(re.match(r'^[1-8]+$', number)) and int(number) < 9
+
 class Dashboard(Frame):
     def __init__(self, master=None, **kw):
         Frame.__init__(self, master, **kw)
@@ -31,7 +34,8 @@ class Dashboard(Frame):
         self.max_people_lbl = Label(self.left_frame, text="Max people:")
         self.max_people_lbl.grid(row=2, column=0, pady=20, padx=20)
 
-        self.max_people_entry = Entry(self.left_frame)
+        validate_numberpeople_command = self.register(validate_numberpeople)
+        self.max_people_entry = Entry(self.left_frame, validate='all', validatecommand=(validate_numberpeople_command, '%P'))
         self.max_people_entry.grid(row=2, column=1, columnspan=2, padx=10)
 
         self.create_game_btn = Button(self.left_frame, text="Create", command=self.create_game)
