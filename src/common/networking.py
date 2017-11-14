@@ -24,14 +24,14 @@ def request(sock, **kargs):
 
 
 def recv(sock):
-    raw_size = sock._recv(MSG_SIZE_BYTES)
+    raw_size = sock.recv(MSG_SIZE_BYTES)
     former_timeout = sock.gettimeout()
     sock.settimeout(None)
     msg_size_bytes = int(raw_size)
     resp = ''
     received_bytes = 0
     while received_bytes < msg_size_bytes:
-        chunk = sock._recv(min(RECV_BUFFER_BYTES, msg_size_bytes - received_bytes))
+        chunk = sock.recv(min(RECV_BUFFER_BYTES, msg_size_bytes - received_bytes))
         resp += chunk
         received_bytes += len(resp)
     sock.settimeout(former_timeout)
