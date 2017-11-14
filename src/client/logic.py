@@ -76,7 +76,7 @@ class ClientLogic(Listener):
         if response["started"]:
             pass
         else:
-            self._out_queue.publish(events.ROOM_CREATED, **response)
+            self._out_queue.publish(events.ROOM_JOINED, **response)
 
     @handler(events.CREATE_ROOM)
     def create_room(self, name, max_users):

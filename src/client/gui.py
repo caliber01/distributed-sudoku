@@ -111,6 +111,13 @@ class UI(Listener):
             return
         self.waiting_frame = waiting_list.WaitingList(self.root, room, self.session['nickname'])
 
+    @handler(events.ROOM_JOINED)
+    def room_joined(self, **room):
+        self.connecting_msg.destroy()
+        self.dashboard_frame.destroy()
+        if self.board_frame:
+            return
+        self.waiting_frame = waiting_list.WaitingList(self.root, room, self.session['nickname'])
 
     # Notifications from server
 
