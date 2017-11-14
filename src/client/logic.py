@@ -60,11 +60,23 @@ class ClientLogic(Listener):
 
     @handler(events.LOAD_ROOMS)
     def load_rooms(self):
-        response = self._connection.request(type=protocol.REQUEST_ROOMS)
+        response = self._connection.request(type=protocol.GET_ROOMS)
         if response['type'] != protocol.RESPONSE_OK:
             self._out_queue.publish(events.ERROR_OCCURRED)
             return
         self._out_queue.publish(events.ROOMS_LOADED, response['rooms'])
+
+    @handler(events.JOIN_GAME)
+    def join_game(self, id):
+        response = self._connection.request(type=protocol.JOIN_ROOM, id=id)
+        # TODO
+        if response['type'] != protocol.RESPONSE_OK:
+            self._out_queue.publish(events.ERROR_OCCURRED)
+            return
+        if response["started"]:
+            pass
+        else:
+            self._out_queue.publish(events.ROOM_CREATED, **response)
 
     @handler(events.CREATE_ROOM)
     def create_room(self, name, max_users):

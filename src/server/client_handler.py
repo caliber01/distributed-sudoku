@@ -65,8 +65,17 @@ class ClientHandler(object):
     def join_to_room(self, args):
         room = self.room_manager.get_room_by_id(args["id"])
         if room != None:
-            room.add_client(self)
-            self.__send(RESPONSE_OK)
+            try:
+                room.add_client(self)
+                if room.game_started:
+                    self.__send(RESPONSE_OK, started=True, matrix=str(room.unsolved))
+                else:
+                    names = []
+                    for user in room.users:
+                        names.append(user.name)
+                    self.__send(RESPONSE_OK, started=False, players=names, room_name=room.name, max_users=room.max_users, need_users=(room.max_users - len(names)))
+            except:
+                self.__send(TOO_LATE)
         else:
             self.__send(NOT_FOUND)
 
@@ -83,7 +92,7 @@ class ClientHandler(object):
             handler(**args)
 
     @handler(GET_ROOMS)
-    def get_available_rooms(self):
+    def get_available_rooms(self, args):
         rooms = []
         for room in self.room_manager.get_available_rooms():
             rooms.append({"name": room.name, "max": room.max_users, "current": len(room.users), "id": room.id})

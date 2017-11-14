@@ -24,11 +24,12 @@ class Room(object):
         self.__scores = defaultdict(lambda: 0)
 
     def full(self):
-        return len(self.users) < self.max_users
+        return len(self.users) == self.max_users
 
     def add_client(self, client):
         self.lock.acquire()
-        if not self.full():
+        if self.full():
+            self.lock.release()
             raise Exception
         self.users.append(client)
         if len(self.users) == self.max_users:

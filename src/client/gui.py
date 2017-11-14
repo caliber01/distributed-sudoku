@@ -51,14 +51,6 @@ class UI(Listener):
         self.root.after(100, self._check_events)
         self.root.mainloop()
 
-
-    def render_join(self):
-        self._setup_font()
-        self.frame = join_game.Join(master=self.root)
-
-        self.frame.bind(join_game.JOIN_GAME, self._handle_join)
-        self.root.mainloop()
-
     def _setup_font(self):
         default_font = tkFont.nametofont("TkDefaultFont")
         default_font.configure(size=14)
@@ -76,7 +68,8 @@ class UI(Listener):
         self.connecting_msg = connecting.Connecting('Connecting', 'Connecting to server...')
 
     def _handle_join(self, event):
-        self.out_queue.publish(events.JOIN_GAME, self.id)
+        game_id = self.dashboard_frame.join_frame.game_id
+        self.out_queue.publish(events.JOIN_GAME, game_id)
         self.connecting_msg = connecting.Connecting('Joining', 'Joinig to game...')
 
     def _check_events(self):
@@ -103,7 +96,12 @@ class UI(Listener):
         self.connect_frame.destroy()
         self.dashboard_frame = dashboard.Dashboard(master=self.root)
         self.dashboard_frame.bind(dashboard.CREATE_GAME, self._handle_create_game)
+        self.dashboard_frame.join_frame.bind(join_game.JOIN_GAME, self._handle_join)
+        self.out_queue.publish(events.LOAD_ROOMS)
 
+    @handler(events.ROOMS_LOADED)
+    def rooms_loaded(self, rooms):
+        self.dashboard_frame.join_frame.update(rooms)
 
     @handler(events.ROOM_CREATED)
     def room_created(self, **room):
