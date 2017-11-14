@@ -68,7 +68,10 @@ class Room(object):
             if not solved:
                 break
         if solved:
-            self.__send_notification(SUDOKU_SOLVED, scores=self.__scores)
+            score = []
+            for user in self.users:
+                score.append((user.name, self.__scores[user.id]))
+            self.__send_notification(SUDOKU_SOLVED, scores=score)
         self.lock.release()
         return True
 
