@@ -7,8 +7,10 @@ SUBMIT = '<<submit>>'
 
 #GREETING = "Create or choose one"
 
+#validation name (not longer than 8 alphanumeric characters and without empty strings/spaces)
 def validate_gamename(name):
-    return bool(re.match(r'^[a-zA-Z0-9_]*$', name))
+    return bool(re.match(r'^[a-zA-Z0-9_]*$', name)) and len(name) < 9
+
 
 class Nickname(Frame):
     def __init__(self, master=None, **kw):
