@@ -60,8 +60,7 @@ class Room(object):
         names = []
         for user in self.users:
             names.append(user.name)
-        self.__send_notification(PEOPLE_CHANGED, players=names, room_name=self.name, max_users=self.max_users,
-                                 need_users=(self.max_users - len(names)))
+        self.__send_notification(PEOPLE_CHANGED, players=names, room_name=self.name, max_users=self.max_users, need_users=(self.max_users - len(names)))
 
     def __send_notification(self, type, **kargs):
         for user in self.users:

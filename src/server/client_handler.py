@@ -64,16 +64,16 @@ class ClientHandler(object):
         room = self.room_manager.get_room_by_id(args["id"])
         if room != None:
             room.add_client(self)
-            self.__send(RESPONSE_OK, name=room.name, max = room.max_users, current = len(room.users), users=[user.name for user in room.users])
+            self.__send(RESPONSE_OK)
         else:
             self.__send(NOT_FOUND)
 
     @handler(REQUEST_CREATE_ROOM)
     def create_room(self, args):
         room = self.room_manager.create_room(args["name"], args["max_users"])
+        self.__send(RESPONSE_OK, name=room.name, max=room.max_users)
         room.add_client(self)
         self.room = room
-        self.__send(RESPONSE_OK, name=room.name, max=room.max_users, current=len(room.users), users=[user.name for user in room.users])
         print("room creted %s %d" % (room.name, room.max_users))
 
     def send_notification(self, type, **args):
