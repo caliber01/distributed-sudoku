@@ -115,8 +115,6 @@ class UI(Listener):
     def room_joined(self, **room):
         self.connecting_msg.destroy()
         self.dashboard_frame.destroy()
-        if self.board_frame:
-            return
         self.waiting_frame = waiting_list.WaitingList(self.root, room, self.session['nickname'])
         self.waiting_frame.update_users(room["users"])
 
@@ -128,6 +126,10 @@ class UI(Listener):
 
     @handler(protocol.START_GAME)
     def start_game(self, **room):
+        if self.connecting_msg:
+            self.connecting_msg.destroy()
+        if self.dashboard_frame:
+            self.dashboard_frame.destroy()
         if self.waiting_frame:
             self.waiting_frame.destroy()
         self.board_frame = board.Board(room['matrix'], self.handle_edit_cell)
