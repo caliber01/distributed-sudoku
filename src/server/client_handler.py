@@ -4,7 +4,6 @@ from common.listener import handler
 import socket
 from collections import defaultdict
 from common.networking import request
-from server.main import LOG
 import uuid
 
 class ClientHandler(object):

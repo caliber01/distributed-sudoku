@@ -1,10 +1,10 @@
 from collections import defaultdict
 from common.protocol import *
-from server.main import LOG
 import threading
 
 class Room(object):
-    def __init__(self, name, max_users):
+    def __init__(self, name, max_users, logger):
+        self._logger = logger
         LOG.info("Room \"%s\" created" % (name))
         self.lock = threading.Lock()
         self.name = name

@@ -19,5 +19,5 @@ def __info():
 if __name__ == '__main__':
     # Starting server
     LOG.info('%s version %s started ...' % (___NAME, ___VER))
-    server = Server('127.0.0.1', DEFAULT_PORT)
+    server = Server('127.0.0.1', DEFAULT_PORT, LOG)
     server.run()
