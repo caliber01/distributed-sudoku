@@ -73,7 +73,7 @@ class ClientHandler(object):
             try:
                 self.room.add_client(self)
                 if self.room.game_started:
-                    self.__send(RESPONSE_OK, started=True, name=room.name)
+                    self.__send(RESPONSE_OK, started=True, name=self.room.name)
                 else:
                     names = []
                     for user in self.room.users:
