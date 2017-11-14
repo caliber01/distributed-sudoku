@@ -18,3 +18,9 @@ class RequestResponseConnection(object):
 
     def request(self, type, **kargs):
         return networking.request(self.s, type=type, **kargs)
+
+    def shutdown(self):
+        if not self.s:
+            return
+        self.s._shutdown()
+        self.s.close()

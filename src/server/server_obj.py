@@ -25,7 +25,7 @@ class Server(object):
     def __process_client_request(self, s, endpoint):
         message = ""
         while True:
-            m = s.recv(MESSAGE_SIZE)
+            m = s._recv(MESSAGE_SIZE)
             if not len(m):
                 break
             message += m.decode()

@@ -3,6 +3,9 @@ Module to abstract networking operations, data representation
 Message is as tring of format {length_of_message}{body}
 """
 import json
+from functools import wraps
+import socket
+import errno
 
 
 RECV_BUFFER_BYTES = 1024
@@ -21,14 +24,17 @@ def request(sock, **kargs):
 
 
 def recv(sock):
-    raw_size = sock.recv(MSG_SIZE_BYTES)
+    raw_size = sock._recv(MSG_SIZE_BYTES)
+    former_timeout = sock.gettimeout()
+    sock.settimeout(None)
     msg_size_bytes = int(raw_size)
     resp = ''
     received_bytes = 0
     while received_bytes < msg_size_bytes:
-        chunk = sock.recv(min(RECV_BUFFER_BYTES, msg_size_bytes - received_bytes))
+        chunk = sock._recv(min(RECV_BUFFER_BYTES, msg_size_bytes - received_bytes))
         resp += chunk
         received_bytes += len(resp)
+    sock.settimeout(former_timeout)
     return json.loads(resp)
 
 
@@ -37,4 +43,6 @@ def send(sock, **kargs):
     size = len(body)
     padded_size = str(size).zfill(MSG_SIZE_BYTES)
     sock.sendall(padded_size + body)
+
+
 

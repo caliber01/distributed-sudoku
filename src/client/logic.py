@@ -23,9 +23,23 @@ class ClientLogic(Listener):
         self._session = {}
         self._listening_port = listening_port
 
+        self._is_running = True
         self._thread = Thread(target=self.run)
         self._thread.start()
         self._connection = RequestResponseConnection()
+
+    def run(self):
+        """
+        Run the Listener infinitely
+        """
+        while self._is_running:
+            self.handle_event(block=True)
+
+    @handler(events.QUIT)
+    def quit(self):
+        logger.info('Shutting down Logic')
+        self._connection.shutdown()
+        self._is_running = False
 
     @handler(events.SUBMIT_NICKNAME)
     def submit_nickname(self, nickname):
