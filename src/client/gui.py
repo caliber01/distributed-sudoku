@@ -83,6 +83,8 @@ class UI(Listener):
         self.out_queue.publish(events.CREATE_ROOM, name=self.dashboard_frame.name, max_users=self.dashboard_frame.max_people)
         self.connecting_msg = connecting.Connecting('New game', 'Creating new game...')
 
+    # Notifications from logic.py
+
     @handler(events.ERROR_CONNECTING_TO_SERVER)
     def error_connecting_to_server(self):
         self.connecting_msg.destroy()
@@ -99,7 +101,12 @@ class UI(Listener):
     def room_created(self, **room):
         self.connecting_msg.destroy()
         self.dashboard_frame.destroy()
+        if self.board_frame:
+            return
         self.waiting_frame = waiting_list.WaitingList(self.root, room, self.session['nickname'])
+
+
+    # Notifications from server
 
     @handler(protocol.PEOPLE_CHANGED)
     def people_changed(self, **kwargs):
@@ -107,6 +114,17 @@ class UI(Listener):
 
     @handler(protocol.START_GAME)
     def start_game(self, **room):
-        print(room)
-        self.waiting_frame.destroy()
-        self.board_frame = board.Board(room['matrix'])
+        if self.waiting_frame:
+            self.waiting_frame.destroy()
+        self.board_frame = board.Board(room['matrix'], self.handle_edit_cell)
+
+    def handle_edit_cell(self, square, prev_value, new_value):
+        self.out_queue.publish(events.CELL_EDITED, square, prev_value, new_value)
+
+    @handler(protocol.SUDOKU_CHANGED)
+    def sudoku_changed(self, **change):
+        self.board_frame.update_cell(change['x'], change['y'], change['value'])
+
+    @handler(protocol.TOO_LATE)
+    def too_late(self):
+        tkMessageBox.showinfo("Damn it!", "You seem to be too late on this cell")

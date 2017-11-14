@@ -72,8 +72,9 @@ class ClientLogic(Listener):
         if response['type'] != protocol.RESPONSE_OK:
             self._out_queue.publish(events.ERROR_OCCURRED)
             return
+        logger.info('Room created')
+        self._session['room_name'] = response['name']
         self._out_queue.publish(events.ROOM_CREATED, **response)
-
 
     @handler(events.MESSAGE)
     def message(self, message):
@@ -81,7 +82,18 @@ class ClientLogic(Listener):
         if response['type'] != protocol.RESPONSE_OK:
             self._out_queue.publish(events.ERROR_OCCURRED)
             return
-        #self._out_queue.publish
+
+    @handler(events.CELL_EDITED)
+    def cell_edited(self, square, prev_value, new_value):
+        x = ord(square[0]) - ord('A')
+        y = int(square[1])
+
+        response = self._connection.request(type=protocol.SET_SUDOKU_VALUE,
+                                            name=self._session['room_name'],
+                                            x=x, y=y, prev=prev_value, value=new_value)
+        if response['type'] != protocol.RESPONSE_OK:
+            self._out_queue.publish(events.ERROR_OCCURRED)
+            return
 
     def __set_name_request(self):
         response = self._connection.request(type=protocol.SET_NAME, name=self._session['nickname'])
