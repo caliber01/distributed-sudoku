@@ -146,6 +146,6 @@ class UI(Listener):
         tkMessageBox.showinfo("Damn it!", "You seem to be too late on this cell")
 
     @handler(protocol.SUDOKU_SOLVED)
-    def sudoku_solved(self):
+    def sudoku_solved(self, **kwargs):
         pass
 

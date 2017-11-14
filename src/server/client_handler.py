@@ -128,7 +128,7 @@ class ClientHandler(object):
             return
 
     @handler(SUDOKU_CHANGED)
-    def __sudoku_solved(self, **kargs):
+    def __sudoku_changed(self, **kargs):
         response = request(self.s_to_client, type=SUDOKU_CHANGED, **kargs)
         # TODO Process error
         if response['type'] != RESPONSE_OK:

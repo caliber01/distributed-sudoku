@@ -20,7 +20,7 @@ class Room(object):
         self.scores = {}
         self.max_users = max_users
         self.game_started = False
-        self.__sudoku = Sudoku(0.3)
+        self.__sudoku = Sudoku(0.02)
         self.__scores = defaultdict(lambda: 0)
 
     def full(self):
