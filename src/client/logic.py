@@ -55,7 +55,7 @@ class ClientLogic(Listener):
             logger.error(e)
             self._out_queue.publish(events.ERROR_CONNECTING_TO_SERVER)
             return
-        self._out_queue.publish(events.ERROR_CONNECTING_TO_SERVER)
+        self._out_queue.publish(events.CONNECTED_TO_SERVER)
 
     @handler(events.LOAD_ROOMS)
     def load_rooms(self):

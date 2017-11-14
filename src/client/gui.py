@@ -61,6 +61,9 @@ class UI(Listener):
             pass
         self.root.after(100, self._check_events)
 
+    def _handle_create_game(self, event):
+        self.out_queue.publish(events.CREATE_ROOM, name=self.frame.name, max_users=self.frame.max_people)
+
     @handler(events.ERROR_CONNECTING_TO_SERVER)
     def error_connecting_to_server(self):
         self.connecting.destroy()
@@ -71,3 +74,4 @@ class UI(Listener):
         self.connecting.destroy()
         self.frame.destroy()
         self.frame = dashboard.Dashboard(master=self.root)
+        self.frame.bind(dashboard.CREATE_GAME, self._handle_create_game)
