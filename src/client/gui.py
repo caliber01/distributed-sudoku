@@ -100,3 +100,7 @@ class UI(Listener):
     @handler(protocol.PEOPLE_CHANGED)
     def people_changed(self, **kwargs):
         print(kwargs)
+
+    @handler(protocol.START_GAME)
+    def start_game(self, **kwargs):
+        print(kwargs)
