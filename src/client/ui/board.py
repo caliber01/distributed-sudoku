@@ -23,7 +23,6 @@ class Board(Frame):
 
         validate_command = self.register(validate_cell)
 
-        print(subgrid_squares)
         for i in range(9):
             f = Frame(self, borderwidth=10, relief=GROOVE)
             for j in range(9):
@@ -40,11 +39,6 @@ class Board(Frame):
         self.create_widgets(matrix)
         self.grid(row=0, column=0)
 
-
-root = Tk()
-default_font = tkFont.nametofont("TkDefaultFont")
-default_font.configure(size=14)
-root.option_add("*Font", default_font)
 
 full_matrix = """
 4 8 3 9 2 1 6 5 7
@@ -71,8 +65,4 @@ matrix_to_solve = """
 """
 
 matrix = sudoku.parse_grid(matrix_to_solve)
-
-app = Board(matrix, master=root)
-app.mainloop()
-root.destroy()
 
