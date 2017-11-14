@@ -12,3 +12,11 @@ class RoomManager(object):
 
     def get_available_rooms(self):
         return [room for room in self.__rooms if not room.full()]
+
+    def get_room_by_id(self, id):
+        room = None
+        for r in self.__rooms:
+            if r.id == id:
+                room = r
+                break
+        return room

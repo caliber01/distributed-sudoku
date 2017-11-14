@@ -7,6 +7,7 @@ SUBMIT = '<<submit>>'
 GREETING = "Create or choose one"
 
 
+
 class Nickname(Frame):
     def __init__(self, master=None, **kw):
         Frame.__init__(self, master, **kw)

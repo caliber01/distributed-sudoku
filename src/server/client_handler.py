@@ -7,8 +7,9 @@ from common.networking import request
 import uuid
 
 class ClientHandler(object):
-    def __init__(self, s, room_manager):
+    def __init__(self, s, room_manager, logger):
         self.id = str(uuid.uuid1())
+        self._logger = logger
         self.socket = s
         self.s_to_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.handlers = defaultdict(list)
@@ -21,14 +22,16 @@ class ClientHandler(object):
                 self.handlers[attr.handled_event].append(attr)
 
     def run(self):
-        while True:
-            try:
+        try:
+            while True:
                 message = recv(self.socket)
+                self._logger.info("New request from client %s" % (self.name))
+                self._logger.info(message)
                 type = message['type']
                 for handler in self.handlers[type]:
                     handler(message)
-            except:
-                self.logger.debug("Exception occurs in client %s" % (self.name))
+        except Exception as e:
+            self._logger.exception("Exception occurs in client %s" % (self.name))
 
 
     @handler(PRINT_MESSAGE)
@@ -42,13 +45,12 @@ class ClientHandler(object):
         self.s_to_client.connect((self.socket.getpeername()[0], args["port"]))
         self.__send(RESPONSE_OK)
 
-    @handler(REQUEST_CREATE_ROOM)
-    def create_room(self, args):
-        room = self.room_manager.create_room(args["name"], args["max_users"])
-        room.add_client(self)
-        self.room = room
-        self.__send(RESPONSE_OK, name=room.name, max = room.max_users, current = len(room.users))
-        print("room creted %s %d" % (room.name, room.max_users))
+    @handler(SET_SUDOKU_VALUE)
+    def set_sudoku_value(self, args):
+        if self.room.set_value(**args):
+            self.__send(RESPONSE_OK)
+        else:
+            self.__send(TOO_LATE)
 
     @handler(GET_SCORE)
     def get_score(self):
@@ -63,17 +65,34 @@ class ClientHandler(object):
     def join_to_room(self, args):
         room = self.room_manager.get_room_by_id(args["id"])
         if room != None:
-            room.add_client(self)
-            self.__send(RESPONSE_OK, name=room.name, max = room.max_users, current = len(room.users))
+            try:
+                room.add_client(self)
+                if room.game_started:
+                    self.__send(RESPONSE_OK, started=True, matrix=str(room.unsolved))
+                else:
+                    names = []
+                    for user in room.users:
+                        names.append(user.name)
+                    self.__send(RESPONSE_OK, started=False, players=names, name=room.name, max=room.max_users, need_users=(room.max_users - len(names)))
+            except:
+                self.__send(TOO_LATE)
         else:
             self.__send(NOT_FOUND)
 
+    @handler(REQUEST_CREATE_ROOM)
+    def create_room(self, args):
+        room = self.room_manager.create_room(args["name"], args["max_users"])
+        self.__send(RESPONSE_OK, name=room.name, max=room.max_users)
+        room.add_client(self)
+        self.room = room
+        print("room creted %s %d" % (room.name, room.max_users))
+
     def send_notification(self, type, **args):
         for handler in self.handlers[type]:
-            handler(args)
+            handler(**args)
 
     @handler(GET_ROOMS)
-    def get_available_rooms(self):
+    def get_available_rooms(self, args):
         rooms = []
         for room in self.room_manager.get_available_rooms():
             rooms.append({"name": room.name, "max": room.max_users, "current": len(room.users), "id": room.id})
@@ -84,7 +103,28 @@ class ClientHandler(object):
 
     @handler(START_GAME)
     def __start_game(self, **kargs):
-        response = request(self.s, type=START_GAME, **kargs)
+        response = request(self.s_to_client, type=START_GAME, **kargs)
+        # TODO Process error
+        if response['type'] != RESPONSE_OK:
+            return
+
+    @handler(PEOPLE_CHANGED)
+    def __people_changed(self, **kargs):
+        response = request(self.s_to_client, type=PEOPLE_CHANGED, **kargs)
+        # TODO Process error
+        if response['type'] != RESPONSE_OK:
+            return
+
+    @handler(SUDOKU_SOLVED)
+    def __sudoku_solved(self, **kargs):
+        response = request(self.s_to_client, type=SUDOKU_SOLVED, **kargs)
+        # TODO Process error
+        if response['type'] != RESPONSE_OK:
+            return
+
+    @handler(SUDOKU_CHANGED)
+    def __sudoku_solved(self, **kargs):
+        response = request(self.s_to_client, type=SUDOKU_CHANGED, **kargs)
         # TODO Process error
         if response['type'] != RESPONSE_OK:
             return
