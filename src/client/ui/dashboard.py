@@ -1,7 +1,9 @@
 from Tkinter import *
 import tkFont
+from client.ui.join_game import Join
 
 CREATE_GAME = '<<create-game>>'
+
 
 class Dashboard(Frame):
     def __init__(self, master=None, **kw):
@@ -36,11 +38,15 @@ class Dashboard(Frame):
         self.create_game_btn.grid(row=3, column=1, pady=10)
 
     def join_game_widgets(self):
-        self.right_frame = Frame(self, borderwidth=1, relief=SUNKEN)
-        self.right_frame.grid(row=0, column=1, padx=10, pady=10, ipadx=10, ipady=10)
-
         self.connect_lbl = Label(self, text = "Join game")
-        self.connect_lbl.grid(row=0, column=1)
+        self.connect_lbl.grid(row=0, column=2)
+
+        self.right_frame = Frame(self, borderwidth=1, relief=SUNKEN)
+        self.right_frame.grid(row=1, column=2, padx=20, pady=20, ipadx=20, ipady=20)
+
+        self.join_frame = Join(self.right_frame)
+        self.join_frame.grid(row=2, column=2)
+
 
     def create_game(self):
         self.name = self.name_entry.get()
