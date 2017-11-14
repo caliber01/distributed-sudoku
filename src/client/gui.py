@@ -56,7 +56,7 @@ class UI(Listener):
 
     def _handle_connect(self, event):
         self.out_queue.publish(events.CONNECT_TO_SERVER, (self.connect_frame.address, int(self.connect_frame.port)))
-        self.connecting_msg = connecting.Connecting()
+        self.connecting_msg = connecting.Connecting('Connecting', 'Connecting to server...')
 
     def _check_events(self):
         try:
@@ -67,6 +67,7 @@ class UI(Listener):
 
     def _handle_create_game(self, event):
         self.out_queue.publish(events.CREATE_ROOM, name=self.dashboard_frame.name, max_users=self.dashboard_frame.max_people)
+        self.connecting_msg = connecting.Connecting('New game', 'Creating new game...')
 
     @handler(events.ERROR_CONNECTING_TO_SERVER)
     def error_connecting_to_server(self):
@@ -79,3 +80,8 @@ class UI(Listener):
         self.connect_frame.destroy()
         self.dashboard_frame = dashboard.Dashboard(master=self.root)
         self.dashboard_frame.bind(dashboard.CREATE_GAME, self._handle_create_game)
+
+    @handler(events.ROOM_CREATED)
+    def room_created(self, **kwargs):
+        self.connecting_msg.destroy()
+        print(kwargs)
