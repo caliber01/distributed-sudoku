@@ -22,14 +22,14 @@ class ClientHandler(object):
                 self.handlers[attr.handled_event].append(attr)
 
     def run(self):
-        while True:
-            try:
+        try:
+            while True:
                 message = recv(self.socket)
                 type = message['type']
                 for handler in self.handlers[type]:
                     handler(message)
-            except:
-                self._logger.debug("Exception occurs in client %s" % (self.name))
+        except:
+            self._logger.debug("Exception occurs in client %s" % (self.name))
 
 
     @handler(PRINT_MESSAGE)
@@ -78,7 +78,7 @@ class ClientHandler(object):
 
     def send_notification(self, type, **args):
         for handler in self.handlers[type]:
-            handler(args)
+            handler(**args)
 
     @handler(GET_ROOMS)
     def get_available_rooms(self):
@@ -92,7 +92,7 @@ class ClientHandler(object):
 
     @handler(START_GAME)
     def __start_game(self, **kargs):
-        response = request(self.s, type=START_GAME, **kargs)
+        response = request(self.s_to_client, type=START_GAME, **kargs)
         # TODO Process error
         if response['type'] != RESPONSE_OK:
             return

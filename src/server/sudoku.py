@@ -37,8 +37,7 @@ class Sudoku(object):
         return (self.solved == self.unsolved)
 
     def print_matrix(self):
-        print('\n'.join([''.join(['{:4}'.format(item) for item in row])
-                         for row in self.unsolved]))
+        return ''.join([''.join([str(item) for item in row]) for row in self.unsolved])
 
     def __str__(self):
         s = ""

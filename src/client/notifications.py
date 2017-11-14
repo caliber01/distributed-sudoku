@@ -62,6 +62,7 @@ class NotificationsConnection():
             try:
                 notification = networking.recv(self.notifications_socket)
                 self.out_queue.publish(notification['type'], **notification)
+                networking.send(self.notifications_socket, type=protocol.RESPONSE_OK)
             except socket.timeout:
                 continue
 

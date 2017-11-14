@@ -23,7 +23,7 @@ class Room(object):
         return len(self.users) < self.max_users
 
     def add_client(self, client):
-        self.lock.acuire()
+        self.lock.acquire()
         if not self.full():
             raise Exception
         self.users.append(client)
@@ -35,13 +35,13 @@ class Room(object):
         self.lock.release()
 
     def remove_client(self, client):
-        self.lock.acuire()
+        self.lock.acquire()
         self.users.remove(client)
         self.__people_changed_notification()
         self.lock.release()
 
     def set_value(self, name, x, y, value, prev):
-        self.lock.acuire()
+        self.lock.acquire()
         if self.__sudoku[x, y] != prev:
             return False
         if self.__sudoku.check(x, y, value):
