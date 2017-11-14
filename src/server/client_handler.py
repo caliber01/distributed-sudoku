@@ -4,6 +4,7 @@ from common.listener import handler
 import socket
 from collections import defaultdict
 from common.networking import request
+from server.main import LOG
 import uuid
 
 class ClientHandler(object):
@@ -14,6 +15,7 @@ class ClientHandler(object):
         self.handlers = defaultdict(list)
         self.room_manager = room_manager
         self.room = None
+        self.name = "Undefined"
         for attr_name in dir(self):
             attr = getattr(self, attr_name)
             if callable(attr) and hasattr(attr, 'handled_event'):
@@ -29,30 +31,41 @@ class ClientHandler(object):
     @handler(PRINT_MESSAGE)
     def print_message(self, args):
         print(args['message'])
-        send(self.socket, type=RESPONSE_OK)
+        self.__send(RESPONSE_OK)
 
 
     @handler(CLIENT_START_LISTEN)
     def send_client_port(self, args):
         self.s_to_client.connect((self.socket.getpeername()[0], args["port"]))
-        send(self.socket, type=RESPONSE_OK)
+        self.__send(RESPONSE_OK)
 
     @handler(REQUEST_CREATE_ROOM)
     def create_room(self, args):
         room = self.room_manager.create_room(args["name"], args["max_users"])
         room.add_client(self)
         self.room = room
-        send(self.socket, type=RESPONSE_OK)
+        self.__send(RESPONSE_OK)
         print("room creted %s %d" % (room.name, room.max_users))
+
+    @handler(GET_SCORE)
+    def get_score(self):
+        self.room.get_score()
+
+    @handler(SET_NAME)
+    def set_name(self, args):
+        self.name = args["name"]
+        self.__send(RESPONSE_OK)
 
     def send_notification(self, type, **args):
         for handler in self.handlers[type]:
             handler(args)
 
-
+    @handler(GET_ROOMS)
     def get_available_rooms(self):
-        # TODO
-        return
+        rooms = []
+        for room in self.room_manager.get_rooms():
+            rooms.append({"name": room.name, "max": room.max_users, "current": len(room.users)})
+        self.__send(RESPONSE_OK, rooms = rooms)
 
     def __request(self, type, **kargs):
         return request(self.s, type=type, **kargs)
@@ -63,3 +76,9 @@ class ClientHandler(object):
         # TODO Process error
         if response['type'] != RESPONSE_OK:
             return
+
+    def __send(self, type, **kargs):
+        try:
+            send(self.socket, type=type, **kargs)
+        except:
+            LOG.debug("Exception occurs in client %s" % (self.name))
