@@ -36,7 +36,7 @@ class Room(object):
             self.game_started = True
             self.__send_notification(START_GAME, matrix=str(self.__sudoku.print_matrix()))
         else:
-            self.__people_changed_notification()
+            self.__people_changed_notification(ignore=client)
         self.lock.release()
 
     def remove_client(self, client):
@@ -75,12 +75,14 @@ class Room(object):
     def get_score(self):
         return self.scores
 
-    def __people_changed_notification(self):
+    def __people_changed_notification(self, ignore=None):
         names = []
         for user in self.users:
             names.append(user.name)
-        self.__send_notification(PEOPLE_CHANGED, players=names, room_name=self.name, max_users=self.max_users, need_users=(self.max_users - len(names)))
+        self.__send_notification(PEOPLE_CHANGED, users=names, room_name=self.name, max_users=self.max_users, need_users=(self.max_users - len(names)), ignore=ignore)
 
-    def __send_notification(self, type, **kargs):
+    def __send_notification(self, type, ignore=None, **kargs):
         for user in self.users:
+            if user == ignore:
+                continue
             user.send_notification(type, **kargs)
