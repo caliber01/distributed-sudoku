@@ -48,7 +48,7 @@ class Board(Frame):
 
     def _get_cell_edit_handler(self, square):
         def handler(*args):
-            self.on_edit_cell(square, self.matrix[square], self.square_vars[square].get())
+            self.on_edit_cell(square, int(self.matrix[square]), int(self.square_vars[square].get()))
         return handler
 
     def update_cell(self, x, y, value):

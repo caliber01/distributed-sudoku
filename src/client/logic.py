@@ -98,7 +98,7 @@ class ClientLogic(Listener):
     @handler(events.CELL_EDITED)
     def cell_edited(self, square, prev_value, new_value):
         x = ord(square[0]) - ord('A')
-        y = int(square[1])
+        y = int(square[1]) - 1
 
         response = self._connection.request(type=protocol.SET_SUDOKU_VALUE,
                                             name=self._session['room_name'],
