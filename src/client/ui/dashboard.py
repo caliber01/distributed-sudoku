@@ -6,7 +6,7 @@ CREATE_GAME = '<<create-game>>'
 
 
 def validate_numberpeople(number):
-    return bool(re.match(r'^[1-8]+$', number)) and int(number) < 9
+    return not number or bool(re.match(r'^[1-8]+$', number)) and int(number) < 9
 
 class Dashboard(Frame):
     def __init__(self, master=None, **kw):
