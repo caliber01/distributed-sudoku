@@ -7,8 +7,9 @@ from common.networking import request
 import uuid
 
 class ClientHandler(object):
-    def __init__(self, s, room_manager):
+    def __init__(self, s, room_manager, logger):
         self.id = str(uuid.uuid1())
+        self._logger = logger
         self.socket = s
         self.s_to_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.handlers = defaultdict(list)
@@ -28,7 +29,7 @@ class ClientHandler(object):
                 for handler in self.handlers[type]:
                     handler(message)
             except:
-                self.logger.debug("Exception occurs in client %s" % (self.name))
+                self._logger.debug("Exception occurs in client %s" % (self.name))
 
 
     @handler(PRINT_MESSAGE)
@@ -49,6 +50,13 @@ class ClientHandler(object):
         self.room = room
         self.__send(RESPONSE_OK, name=room.name, max = room.max_users, current = len(room.users))
         print("room creted %s %d" % (room.name, room.max_users))
+
+    @handler(SET_SUDOKU_VALUE)
+    def set_sudoku_value(self, args):
+        if self.room.set_value(args["x"], args["y"], args["value"], args["prev"]):
+            self.__send(RESPONSE_OK)
+        else:
+            self.__send(TOO_LATE)
 
     @handler(GET_SCORE)
     def get_score(self):

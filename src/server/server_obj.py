@@ -25,7 +25,7 @@ class Server(Listener):
                 self.logger.debug('Awaiting requests ...')
                 client_socket, endpoint = self.s.accept()
                 self.logger.debug('Created cliend handler for  %s:%d' % client_socket.getsockname())
-                client = server.client_handler.ClientHandler(client_socket, self.room_manager)
+                client = server.client_handler.ClientHandler(client_socket, self.room_manager, self.logger)
                 self.clients[id] = client
                 t = Thread(target=client.run)
                 t.start()
