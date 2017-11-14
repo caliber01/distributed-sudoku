@@ -3,7 +3,7 @@ from common.protocol import *
 from common.listener import handler
 import socket
 from collections import defaultdict
-import common.networking
+from common.networking import request
 import uuid
 
 class ClientHandler(object):
@@ -45,9 +45,21 @@ class ClientHandler(object):
         send(self.socket, type=RESPONSE_OK)
         print("room creted %s %d" % (room.name, room.max_users))
 
+    def send_notification(self, type, **args):
+        for handler in self.handlers[type]:
+            handler(args)
+
+
     def get_available_rooms(self):
         # TODO
         return
 
     def __request(self, type, **kargs):
-        return common.networking.request(self.s, type=type, **kargs)
+        return request(self.s, type=type, **kargs)
+
+    @handler(START_GAME)
+    def __start_game(self, **kargs):
+        response = request(self.s, type=START_GAME, **kargs)
+        # TODO Process error
+        if response['type'] != RESPONSE_OK:
+            return
