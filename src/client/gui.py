@@ -3,13 +3,11 @@ from common.listener import Listener, handler
 import tkFont
 from Tkinter import Tk, Toplevel
 import client.ui.nickname as nickname
-<<<<<<< HEAD
-import client.ui.join_game as join_game
-=======
 import client.ui.connect as connect
 import client.ui.connecting as connecting
 import client.ui.dashboard as dashboard
->>>>>>> abbd6c92e83933c4e9f7639e87cc983ce7963d4b
+import client.ui.join_game as join_game
+
 from Queue import Empty
 import tkMessageBox
 
@@ -51,9 +49,6 @@ class UI(Listener):
         self._setup_font()
         self.frame = join_game.Join(master=self.root)
         self.frame.bind(join_game.JOIN, self._connect)
-
-        self.root.after(100, self._check_events)
-        self.root.mainloop()
 
     def _setup_font(self):
         default_font = tkFont.nametofont("TkDefaultFont")

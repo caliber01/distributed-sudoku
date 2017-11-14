@@ -1,41 +1,68 @@
 from collections import defaultdict
-from common.protocol import START_GAME
+from server.sudoku import Sudoku
+from common.protocol import *
+import threading
+import uuid
+
 
 class Room(object):
-    def __init__(self, name, max_users):
+    def __init__(self, name, max_users, logger):
+        self.id = str(uuid.uuid1())
+        self._logger = logger
+        self._logger.info("Room \"%s\" created" % (name))
+        self.lock = threading.Lock()
         self.name = name
         self.users = []
         self.scores = {}
         self.max_users = max_users
         self.game_started = False
-        self.__board = [[0 for x in range(9)] for y in range(9)]
-        self.__scores = defaultdict(0)
+        self.__sudoku = Sudoku(0.3)
+        self.__scores = defaultdict(lambda: 0)
 
-    def place_exists(self):
+    def full(self):
         return len(self.users) < self.max_users
 
     def add_client(self, client):
-        if not self.place_exists():
+        self.lock.acuire()
+        if not self.full():
             raise Exception
         self.users.append(client)
         if len(self.users) == self.max_users:
             self.game_started = True
-            self.__generate_game()
-
-        #if not game_starged:
-        # TODO notification
+            self.__send_notification(START_GAME, matrix=str(self.__sudoku.print_matrix()))
+        else:
+            self.__people_changed_notification()
+        self.lock.release()
 
     def remove_client(self, client):
+        self.lock.acuire()
         self.users.remove(client)
-        # if not game_starged:
-        # TODO notification
+        self.__people_changed_notification()
+        self.lock.release()
 
+    def set_value(self, name, x, y, value, prev):
+        self.lock.acuire()
+        if self.__sudoku[x, y] != prev:
+            return False
+        if self.__sudoku.check(x, y, value):
+            self.__scores[name] += 1
+        else:
+            self.__scores[name] += 1
+        self.__sudoku.unsolved[x, y] = value
+        self.__send_notification(SUDOKU_CHANGED, x=x, y=y, value=value)
+        self.lock.release()
+        return True
 
-    def __generate_game(self):
-        # TODO
-        return
+    def get_score(self):
+        return self.scores
 
+    def __people_changed_notification(self):
+        names = []
+        for user in self.users:
+            names.append(user.name)
+        self.__send_notification(PEOPLE_CHANGED, players=names, room_name=self.name, max_users=self.max_users,
+                                 need_users=(self.max_users - len(names)))
 
     def __send_notification(self, type, **kargs):
         for user in self.users:
-            user.send_notification(START_GAME, matrix = self.__board)
+            user.send_notification(type, **kargs)
