@@ -4,10 +4,8 @@ import client.sudoku as sudoku
 
 
 class Board(Frame):
-    def say_hi(self):
-        print "hi there, everyone!"
-
-    def create_widgets(self, matrix):
+    def create_widgets(self, raw_matrix):
+        matrix = sudoku.parse_grid(raw_matrix)
         rows = ['ABC', 'DEF', 'GHI']
         cols = ['123', '456', '789']
         subgrid_squares = [sudoku.product(rs, cs) for rs in rows for cs in cols]

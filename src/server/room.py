@@ -38,6 +38,8 @@ class Room(object):
         self.lock.acquire()
         self.users.remove(client)
         self.__people_changed_notification()
+        if len(self.users) == 1:
+            self.__send_notification(SUDOKU_SOLVED, scores=self.__scores)
         self.lock.release()
 
     def set_value(self, name, x, y, value, prev):
@@ -50,6 +52,8 @@ class Room(object):
             self.__scores[name] += 1
         self.__sudoku.unsolved[x, y] = value
         self.__send_notification(SUDOKU_CHANGED, x=x, y=y, value=value)
+        if (self.__sudoku.unsolved == self.__sudoku.solved).all():
+            self.__send_notification(SUDOKU_SOLVED, scores=self.__scores)
         self.lock.release()
         return True
 

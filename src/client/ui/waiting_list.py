@@ -5,14 +5,14 @@ CREATE_GAME = '<<create-game>>'
 
 
 class WaitingList(Frame):
-    def __init__(self, master, room, **kw):
+    def __init__(self, master, room, nickname, **kw):
         Frame.__init__(self, master, **kw)
         self.room = room
 
         self.users_var = StringVar()
-        self.users_var.set(' '.join(room['users']))
+        self.users_var.set(nickname)
         self.people_count_var = StringVar()
-        self.people_count_var.set("(%d/%d)" % (len(self.room['users']), self.room['max']))
+        self.people_count_var.set("(%d/%d)" % (1, self.room['max']))
 
         self.create_widgets()
         self.grid(row=0, column=0, padx=30, pady=30)
