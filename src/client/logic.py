@@ -51,7 +51,7 @@ class ClientLogic(Listener):
         self._session['server'] = server
         try:
             self._connection.connect(server, self._listening_port)
-            #self.__set_name_request()
+            self.__set_name_request()
         except Exception as e:
             logger.error(e)
             self._out_queue.publish(events.ERROR_CONNECTING_TO_SERVER)
