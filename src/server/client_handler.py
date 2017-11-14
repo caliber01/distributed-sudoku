@@ -122,6 +122,13 @@ class ClientHandler(object):
         if response['type'] != RESPONSE_OK:
             return
 
+    @handler(SUDOKU_CHANGED)
+    def __sudoku_solved(self, **kargs):
+        response = request(self.s_to_client, type=SUDOKU_CHANGED, **kargs)
+        # TODO Process error
+        if response['type'] != RESPONSE_OK:
+            return
+
     def __send(self, type, **kargs):
         try:
             send(self.socket, type=type, **kargs)
