@@ -22,7 +22,7 @@ class Join(Frame):
         return (self.name, self.need, self.id)
 
     def create_widgets(self):
-        self._label = Label(self, text='Сurrent list of expected games', font='sans 16')
+        self._label = Label(self, text='Games', font='sans 16')
         self._label.grid(row=0, columnspan=2, rowspan=2)
 
         self._label = Label(self, text='')

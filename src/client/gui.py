@@ -7,6 +7,8 @@ import client.ui.connect as connect
 import client.ui.connecting as connecting
 import client.ui.dashboard as dashboard
 import client.ui.join_game as join_game
+import client.ui.waiting_list as waiting_list
+import common.protocol as protocol
 
 from Queue import Empty
 import tkMessageBox
@@ -36,6 +38,7 @@ class UI(Listener):
         self.connecting_msg = None
         self.dashboard_frame = None
         self.message = None
+        self.waiting_frame = None
 
     def render_welcome(self):
         self._setup_font()
@@ -89,6 +92,11 @@ class UI(Listener):
         self.dashboard_frame.bind(dashboard.CREATE_GAME, self._handle_create_game)
 
     @handler(events.ROOM_CREATED)
-    def room_created(self, **kwargs):
+    def room_created(self, **room):
         self.connecting_msg.destroy()
+        self.dashboard_frame.destroy()
+        self.waiting_frame = waiting_list.WaitingList(self.root, room)
+
+    @handler(protocol.PEOPLE_CHANGED)
+    def people_changed(self, **kwargs):
         print(kwargs)
