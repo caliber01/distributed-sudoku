@@ -53,7 +53,8 @@ class Board(Frame):
 
     def update_cell(self, x, y, value):
         square = chr(x + ord('A')) + str(y+1)
-        if int(self.square_vars[square].get()) == value:
+        prev = self.square_vars[square].get() or 0
+        if int(prev) == value:
             return
         self.square_vars[square].set(value)
 
