@@ -11,8 +11,7 @@ def handler(event):
 class Listener(object):
     """
     Base class for classes that listen to events on in_queue
-
-    methods of subclass decorated with @handler will be called when in_channel receives some event
+    methods of subclass decorated with @handler will be called when in_queue receives some event
     """
 
     def __init__(self, in_queue):

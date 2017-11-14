@@ -9,7 +9,7 @@ CLOSE = "<<close>>"
 class ResultBoard(Frame):
     def __init__(self, scores, master=None, **kw):
         Frame.__init__(self, master, **kw)
-        self.nicks = sorted(scores.items(), key=lambda player: player[1], reverse=True)
+        self.nicks = sorted(scores, key=lambda player: player[1], reverse=True)
         self.create_widgets()
         self.grid(row=0, column=0, padx=40, pady=40)
 
