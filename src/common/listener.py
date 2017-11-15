@@ -2,6 +2,11 @@ from collections import defaultdict
 
 
 def handler(event):
+    """
+    Decorator to mark methods as handling events from the in_queue
+    :param event: event type this method handles
+    :return: wrapped method
+    """
     def wrapper(method):
         method.handled_event = event
         return method

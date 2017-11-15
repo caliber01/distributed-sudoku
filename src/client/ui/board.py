@@ -48,14 +48,18 @@ class Board(Frame):
 
     def _get_cell_edit_handler(self, square):
         def handler(*args):
-            self.on_edit_cell(square, int(self.matrix[square]), int(self.square_vars[square].get()))
+            self.on_edit_cell(square, int(self.matrix[square] or 0), int(self.square_vars[square].get() or 0))
+            self.matrix[square] = int(self.square_vars[square].get() or 0)
         return handler
 
     def update_cell(self, x, y, value):
+        if value == 0:
+            value = ''
         square = chr(x + ord('A')) + str(y+1)
         prev = self.square_vars[square].get() or 0
-        if int(prev) == value:
+        if int(prev) == (value or 0):
             return
+        self.matrix[square] = value
         self.square_vars[square].set(value)
 
 
@@ -82,6 +86,4 @@ matrix_to_solve = """
 8 0 0 2 0 3 0 0 9
 0 0 5 0 1 0 3 0 0
 """
-
-matrix = sudoku.parse_grid(matrix_to_solve)
 
