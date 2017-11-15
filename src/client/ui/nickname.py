@@ -7,8 +7,10 @@ SUBMIT = '<<submit>>'
 
 #GREETING = "Create or choose one"
 
-#validation name (not longer than 8 alphanumeric characters and without empty strings/spaces)
 def validate_gamename(name):
+    """
+    validation name (not longer than 8 alphanumeric characters and without empty strings/spaces)
+    """
     return bool(re.match(r'^[a-zA-Z0-9_]*$', name)) and len(name) < 9
 
 
@@ -28,6 +30,9 @@ class Nickname(Frame):
         self.nickname = None
 
     def create_widgets(self):
+        """
+        creates widget that would welcome user to the game and asks their nickname
+        """
         self._label = Label(self, text='Welcome to Sudoku game', font=4)
         self._label.grid(row=0, columnspan=2)
 
@@ -43,6 +48,9 @@ class Nickname(Frame):
         self._button_continue.grid(row=6, pady=20)
 
     def submit(self):
+        """
+        sends user's nickname to server
+        """
         name = self._nickname.get()
         if name == '':
             tkMessageBox.showinfo('Nickname', 'Please choose your nickname')

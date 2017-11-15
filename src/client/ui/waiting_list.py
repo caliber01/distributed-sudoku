@@ -6,6 +6,9 @@ CREATE_GAME = '<<create-game>>'
 
 class WaitingList(Frame):
     def __init__(self, master, room, nickname, **kw):
+        """
+        creates frame of waiting list
+        """
         Frame.__init__(self, master, **kw)
         self.room = room
         self.nickname = nickname
@@ -19,6 +22,10 @@ class WaitingList(Frame):
         self.grid(row=0, column=0, padx=30, pady=30)
 
     def create_widgets(self):
+        """
+        creates widgets of waiting list frame
+        it shows how many users are needed yet to join to start a game
+        """
         self.title_lbl = Label(self, text=self.room['name'])
         self.title_lbl.grid(row=0)
 
@@ -37,6 +44,9 @@ class WaitingList(Frame):
         self.leave_btn.grid(row=4, pady=10)
 
     def update_users(self, users):
+        """
+        updates the list and number of users
+        """
         self.room['users'] = users
         self.users_var.set(' '.join(users))
         self.people_count_var.set("(%d/%d)" % (len(users), self.room['max']))

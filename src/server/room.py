@@ -11,6 +11,9 @@ logger = logging.getLogger(__name__)
 
 class Room(object):
     def __init__(self, name, max_users, logger):
+        """
+        creates new game
+        """
         self.id = str(uuid.uuid1())
         self._logger = logger
         self._logger.info("Room \"%s\" created" % (name))
@@ -24,9 +27,15 @@ class Room(object):
         self.__scores = defaultdict(lambda: 0)
 
     def full(self):
+        """
+        checks if the game has all the users it needs
+        """
         return len(self.users) == self.max_users
 
     def add_client(self, client):
+        """
+        adds new user to the game
+        """
         self.lock.acquire()
         if self.full():
             self.lock.release()
@@ -40,6 +49,9 @@ class Room(object):
         self.lock.release()
 
     def remove_client(self, client):
+        """
+        deletes user from the game
+        """
         self.lock.acquire()
         self.users.remove(client)
         self.__people_changed_notification()
@@ -73,15 +85,24 @@ class Room(object):
         return True
 
     def get_score(self):
+        """
+        returns list of users' scores
+        """
         return self.scores
 
     def __people_changed_notification(self, ignore=None):
+        """
+        creates notification if list of users in a game changes
+        """
         names = []
         for user in self.users:
             names.append(user.name)
         self.__send_notification(PEOPLE_CHANGED, users=names, room_name=self.name, max_users=self.max_users, need_users=(self.max_users - len(names)), ignore=ignore)
 
     def __send_notification(self, type, ignore=None, **kargs):
+        """
+        sends given notification
+        """
         for user in self.users:
             if user == ignore:
                 continue

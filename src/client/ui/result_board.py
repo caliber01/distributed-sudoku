@@ -7,6 +7,11 @@ SUBMIT = '<<submit>>'
 
 class ResultBoard(Frame):
 	def __init__(self, master=None, **kw):
+		"""
+		creates a frame that will contain result board
+		gets list of players and their scores
+		sorts list of players according to their scores
+		"""
 		Frame.__init__(self, master, **kw)
 		players = [('Bob', 5), ('Alice', 6), ('andr', 3),]
 		self.nicks = sorted(players, key=lambda player: player[1], reverse=1)
@@ -14,11 +19,14 @@ class ResultBoard(Frame):
 		self.grid(row=0, column=0, padx=40, pady=40)
 
 	def create_widgets(self):
+		"""
+		creates a widget with result board
+		"""
 		bold_font = tkfont.Font(family="Helvetica", size=11, weight="bold")
 		small_font = tkfont.Font(family="Helvetica", size=11)
 		self._label = Label(self, text=' Result Board ', font = bold_font)
 		self._label.grid(row=0, rowspan=1,columnspan=2,sticky='n')
-		
+
 		self._label = Label(self, text= self.nicks[0][0] + " is the winner", font = small_font)
 		self._label.grid(row=1, rowspan=1,columnspan=2,sticky='n')
 		

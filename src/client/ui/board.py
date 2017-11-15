@@ -4,7 +4,12 @@ import client.sudoku as sudoku
 
 
 class Board(Frame):
+
+
     def __init__(self, raw_matrix, on_edit_cell, master=None):
+        """
+        creates new game board
+        """
         Frame.__init__(self, master)
         self.on_edit_cell = on_edit_cell
         self.grid(row=0, column=0)
@@ -12,7 +17,11 @@ class Board(Frame):
         self.matrix = sudoku.parse_grid(raw_matrix)
         self.create_widgets()
 
+
     def create_widgets(self):
+        """
+        creates 3x3 squares layout, each of squares has 3x3 layout on its own
+        """
         rows = ['ABC', 'DEF', 'GHI']
         cols = ['123', '456', '789']
         subgrid_squares = [sudoku.product(rs, cs) for rs in rows for cs in cols]
@@ -47,11 +56,17 @@ class Board(Frame):
             f.grid(row=i // 3, column=i % 3, padx=5, pady=5)
 
     def _get_cell_edit_handler(self, square):
+        """
+        if this user changes a cell, we call this function to update this cell for all other users
+        """
         def handler(*args):
             self.on_edit_cell(square, int(self.matrix[square]), int(self.square_vars[square].get()))
         return handler
 
     def update_cell(self, x, y, value):
+        """
+        updates cell in this user's board if another user changes it
+        """
         square = chr(x + ord('A')) + str(y+1)
         prev = self.square_vars[square].get() or 0
         if int(prev) == value:

@@ -5,6 +5,9 @@ JOIN_GAME = '<<join-game>>'
 
 class Join(Frame):
     def __init__(self, master=None, **kw):
+        """
+        creates new frame for joining game
+        """
         self.rooms = []
         self.id = []
         Frame.__init__(self, master, **kw)
@@ -13,10 +16,16 @@ class Join(Frame):
         self.nickname = None
 
     def update(self, rooms):
+        """
+        sets list of rooms to new rooms
+        """
         self.rooms = rooms
         self._update_rooms_list()
 
     def _update_rooms_list(self):
+        """
+        updates list of rooms
+        """
         if self._game_list.size():
             self._game_list.delete(first=0, last=self._game_list.size())
             self.id = []
@@ -28,6 +37,9 @@ class Join(Frame):
 
 
     def create_widgets(self):
+        """
+        creates widget for joining game
+        """
         #self._label = Label(self, text='Choose the game')
         #self._label.grid(row=0)
 
@@ -42,6 +54,9 @@ class Join(Frame):
         self._button_join.grid(row=4, pady=10)
 
     def join(self):
+        """
+        connects user to a game if they choose to join it
+        """
         index = self._game_list.curselection()[0]
         self.game_id = self.id[index]
         self.event_generate(JOIN_GAME)
