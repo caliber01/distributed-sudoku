@@ -41,7 +41,7 @@ class NotificationsConnection():
 
     def _run(self):
         self.s.listen(1)
-        self.s.settimeout(1)
+        self.s.settimeout(5)
         while True:
             if self._should_shutdown():
                 self._shutdown()
@@ -53,7 +53,7 @@ class NotificationsConnection():
                 continue
 
         self.s.close()
-        self.notifications_socket.settimeout(1)
+        self.notifications_socket.settimeout(5)
 
         while True:
             if self._should_shutdown():
