@@ -60,17 +60,21 @@ class Board(Frame):
         if this user changes a cell, we call this function to update this cell for all other users
         """
         def handler(*args):
-            self.on_edit_cell(square, int(self.matrix[square]), int(self.square_vars[square].get()))
+            self.on_edit_cell(square, int(self.matrix[square] or 0), int(self.square_vars[square].get() or 0))
+            self.matrix[square] = int(self.square_vars[square].get() or 0)
         return handler
 
     def update_cell(self, x, y, value):
         """
         updates cell in this user's board if another user changes it
         """
+        if value == 0:
+            value = ''
         square = chr(x + ord('A')) + str(y+1)
         prev = self.square_vars[square].get() or 0
-        if int(prev) == value:
+        if int(prev) == (value or 0):
             return
+        self.matrix[square] = value
         self.square_vars[square].set(value)
 
 
@@ -97,6 +101,4 @@ matrix_to_solve = """
 8 0 0 2 0 3 0 0 9
 0 0 5 0 1 0 3 0 0
 """
-
-matrix = sudoku.parse_grid(matrix_to_solve)
 

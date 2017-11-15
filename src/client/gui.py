@@ -9,6 +9,7 @@ import client.ui.dashboard as dashboard
 import client.ui.join_game as join_game
 import client.ui.waiting_list as waiting_list
 import client.ui.board as board
+import client.ui.result_board as result_board
 import common.protocol as protocol
 
 from Queue import Empty
@@ -41,6 +42,7 @@ class UI(Listener):
         self.message = None
         self.waiting_frame = None
         self.board_frame = None
+        self.scores_frame = None
         self.session = {}
 
     def render_welcome(self):
@@ -60,6 +62,7 @@ class UI(Listener):
         self.out_queue.publish(events.SUBMIT_NICKNAME, self.nickname_frame.nickname)
         self.session['nickname'] = self.nickname_frame.nickname
         self.nickname_frame.destroy()
+        self.nickname_frame = None
         self.connect_frame = connect.Connect(master=self.root)
         self.connect_frame.bind(connect.CONNECT, self._handle_connect)
 
@@ -71,6 +74,9 @@ class UI(Listener):
         game_id = self.dashboard_frame.join_frame.game_id
         self.out_queue.publish(events.JOIN_GAME, game_id)
         self.connecting_msg = connecting.Connecting('Joining', 'Joinig to game...')
+
+    def _leave_room(self, event):
+        self.out_queue.publish(events.LEAVE_ROOM)
 
     def _check_events(self):
         try:
@@ -88,50 +94,64 @@ class UI(Listener):
     @handler(events.ERROR_CONNECTING_TO_SERVER)
     def error_connecting_to_server(self):
         self.connecting_msg.destroy()
+        self.connecting_msg = None
         tkMessageBox.showerror("Connection error", "Error connecting to server")
 
     @handler(events.CONNECTED_TO_SERVER)
     def connected_to_server(self):
         self.connecting_msg.destroy()
+        self.connecting_msg = None
         self.connect_frame.destroy()
-        self.dashboard_frame = dashboard.Dashboard(master=self.root)
-        self.dashboard_frame.bind(dashboard.CREATE_GAME, self._handle_create_game)
-        self.dashboard_frame.join_frame.bind(join_game.JOIN_GAME, self._handle_join)
-        self.out_queue.publish(events.LOAD_ROOMS)
+        self.connect_frame = None
+        self._show_dashboard()
+
+    @handler(events.ROOM_LEAVED)
+    def room_leaved(self):
+        self.waiting_frame.destroy()
+        self._show_dashboard()
 
     @handler(events.ROOMS_LOADED)
     def rooms_loaded(self, rooms):
-        self.dashboard_frame.join_frame.update(rooms)
+        if self.dashboard_frame:
+            self.dashboard_frame.join_frame.update_rooms(rooms)
 
     @handler(events.ROOM_CREATED)
     def room_created(self, **room):
         self.connecting_msg.destroy()
-        self.dashboard_frame.destroy()
+        self.connecting_msg = None
+        self._destroy_dashboard()
         if self.board_frame:
             return
         self.waiting_frame = waiting_list.WaitingList(self.root, room, self.session['nickname'])
+        self.waiting_frame.bind(waiting_list.LEAVE_ROOM, self._leave_room)
 
     @handler(events.ROOM_JOINED)
     def room_joined(self, **room):
         self.connecting_msg.destroy()
+        self.connecting_msg = None
         self.dashboard_frame.destroy()
+        self.dashboard_frame = None
         self.waiting_frame = waiting_list.WaitingList(self.root, room, self.session['nickname'])
         self.waiting_frame.update_users(room["users"])
+        self.waiting_frame.bind(waiting_list.LEAVE_ROOM, self._leave_room)
 
     # Notifications from server
 
     @handler(protocol.PEOPLE_CHANGED)
     def people_changed(self, **kwargs):
+        if not self.waiting_frame:
+            return
         self.waiting_frame.update_users(kwargs["users"])
 
     @handler(protocol.START_GAME)
     def start_game(self, **room):
         if self.connecting_msg:
             self.connecting_msg.destroy()
-        if self.dashboard_frame:
-            self.dashboard_frame.destroy()
+            self.connecting_msg = None
+        self._destroy_dashboard()
         if self.waiting_frame:
             self.waiting_frame.destroy()
+            self.waiting_frame = None
         self.board_frame = board.Board(room['matrix'], self.handle_edit_cell)
 
     def handle_edit_cell(self, square, prev_value, new_value):
@@ -146,6 +166,34 @@ class UI(Listener):
         tkMessageBox.showinfo("Damn it!", "You seem to be too late on this cell")
 
     @handler(protocol.SUDOKU_SOLVED)
-    def sudoku_solved(self, **kwargs):
-        pass
+    def sudoku_solved(self, scores, **kwargs):
+        self.board_frame.destroy()
+        self.board_frame = None
+        self.scores_frame = result_board.ResultBoard(scores, self.root)
+        self.scores_frame.bind(result_board.CLOSE, self._after_scores)
+
+    def _after_scores(self, event):
+        self.scores_frame.destroy()
+        self.scores_frame = None
+        self._show_dashboard()
+        self.out_queue.publish(events.GAME_ENDED)
+
+    def _show_dashboard(self):
+        self.dashboard_frame = dashboard.Dashboard(master=self.root)
+        self.dashboard_frame.bind(dashboard.CREATE_GAME, self._handle_create_game)
+        self.dashboard_frame.join_frame.bind(join_game.JOIN_GAME, self._handle_join)
+        self.out_queue.publish(events.LOAD_ROOMS)
+        self.root.after(1000, self._load_rooms)
+
+    def _load_rooms(self):
+        if not self.dashboard_frame:
+            return
+        self.out_queue.publish(events.LOAD_ROOMS)
+        self.root.after(5000, self._load_rooms)
+
+
+    def _destroy_dashboard(self):
+        if self.dashboard_frame:
+            self.dashboard_frame.destroy()
+            self.dashboard_frame = None
 

@@ -74,7 +74,6 @@ class ClientLogic(Listener):
             return
         if not response["started"]:
             self._out_queue.publish(events.ROOM_JOINED, **response)
-        self._session['room_name'] = response['name']
 
     @handler(events.CREATE_ROOM)
     def create_room(self, name, max_users):
@@ -83,30 +82,29 @@ class ClientLogic(Listener):
             self._out_queue.publish(events.ERROR_OCCURRED)
             return
         logger.info('Room created')
-        self._session['room_name'] = response['name']
         self._out_queue.publish(events.ROOM_CREATED, **response)
-
-    @handler(events.MESSAGE)
-    def message(self, message):
-        response = self._connection.request(type=protocol.PRINT_MESSAGE, message=message)
-        if response['type'] != protocol.RESPONSE_OK:
-            self._out_queue.publish(events.ERROR_OCCURRED)
-            return
 
     @handler(events.CELL_EDITED)
     def cell_edited(self, square, prev_value, new_value):
         x = ord(square[0]) - ord('A')
         y = int(square[1]) - 1
 
-        response = self._connection.request(type=protocol.SET_SUDOKU_VALUE,
-                                            name=self._session['room_name'],
-                                            x=x, y=y, prev=prev_value, value=new_value)
+        response = self._connection.request(type=protocol.SET_SUDOKU_VALUE, x=x, y=y, prev=prev_value, value=new_value)
         if response['type'] != protocol.RESPONSE_OK:
             self._out_queue.publish(events.ERROR_OCCURRED)
             return
+
+    @handler(events.LEAVE_ROOM)
+    def leave_room(self):
+        response = self._connection.request(type=protocol.LEAVE_ROOM)
+        self._out_queue.publish(events.ROOM_LEAVED)
 
     def __set_name_request(self):
         response = self._connection.request(type=protocol.SET_NAME, name=self._session['nickname'])
         if response['type'] != protocol.RESPONSE_OK:
             self._out_queue.publish(events.ERROR_OCCURRED)
             return
+
+    @handler(events.GAME_ENDED)
+    def game_ended(self):
+        pass

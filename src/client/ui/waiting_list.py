@@ -2,6 +2,7 @@ from Tkinter import *
 import tkFont
 
 CREATE_GAME = '<<create-game>>'
+LEAVE_ROOM = '<<leave-room>>'
 
 
 class WaitingList(Frame):
@@ -40,7 +41,7 @@ class WaitingList(Frame):
         self.users_list = Listbox(self, listvariable=self.users_var)
         self.users_list.grid(row=3, pady=20, ipadx=10, ipady=10)
 
-        self.leave_btn = Button(self, text="Leave")
+        self.leave_btn = Button(self, text="Leave", command=self._leave_room)
         self.leave_btn.grid(row=4, pady=10)
 
     def update_users(self, users):
@@ -50,6 +51,9 @@ class WaitingList(Frame):
         self.room['users'] = users
         self.users_var.set(' '.join(users))
         self.people_count_var.set("(%d/%d)" % (len(users), self.room['max']))
+
+    def _leave_room(self):
+        self.event_generate(LEAVE_ROOM)
 
 
 if __name__ == '__main__':

@@ -25,6 +25,8 @@ def request(sock, **kargs):
 
 def recv(sock):
     raw_size = sock.recv(MSG_SIZE_BYTES)
+    if not len(raw_size):
+        return False
     former_timeout = sock.gettimeout()
     sock.settimeout(None)
     msg_size_bytes = int(raw_size)

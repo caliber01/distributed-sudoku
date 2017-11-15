@@ -25,19 +25,24 @@ class ClientHandler(object):
         try:
             while True:
                 message = recv(self.socket)
+                if not message:
+                    self.leave_room_remove()
+                    break
                 self._logger.info("New request from client %s" % (self.name))
                 self._logger.info(message)
                 type = message['type']
                 for handler in self.handlers[type]:
                     handler(message)
-        except Exception as e:
+        except:
             self._logger.exception("Exception occurs in client %s" % (self.name))
-            if self.room != None:
-                self.room.remove_client(self)
-                if not len(self.room.users):
-                    self.room_manager.remove_room(self.room)
-                self.room = None
+            self.leave_room_remove()
 
+    def leave_room_remove(self):
+        if self.room != None:
+            self.room.remove_client(self)
+            if not len(self.room.users):
+                self.room_manager.remove_room(self.room)
+            self.room = None
 
     @handler(PRINT_MESSAGE)
     def print_message(self, args):
@@ -52,7 +57,7 @@ class ClientHandler(object):
 
     @handler(SET_SUDOKU_VALUE)
     def set_sudoku_value(self, args):
-        if self.room.set_value(**args):
+        if self.room.set_value(name=self.id, **args):
             self.__send(RESPONSE_OK)
         else:
             self.__send(TOO_LATE)
@@ -105,6 +110,12 @@ class ClientHandler(object):
 
     def __request(self, type, **kargs):
         return request(self.s, type=type, **kargs)
+
+    @handler(LEAVE_ROOM)
+    def __leave_room(self, args):
+       self.leave_room_remove()
+       self.__send(RESPONSE_OK)
+
 
     @handler(START_GAME)
     def __start_game(self, **kargs):

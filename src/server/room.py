@@ -23,7 +23,7 @@ class Room(object):
         self.scores = {}
         self.max_users = max_users
         self.game_started = False
-        self.__sudoku = Sudoku(0.02)
+        self.__sudoku = Sudoku(0.2)
         self.__scores = defaultdict(lambda: 0)
 
     def full(self):
@@ -53,11 +53,16 @@ class Room(object):
         deletes user from the game
         """
         self.lock.acquire()
-        self.users.remove(client)
+        if client in self.users:
+            self.users.remove(client)
         self.__people_changed_notification()
         if len(self.users) == 1:
-            self.__send_notification(SUDOKU_SOLVED, scores=self.__scores)
-        self.lock.release()
+            scores = [(self.users[0].name, self.__scores[self.users[0].id])]
+            self.__send_notification(SUDOKU_SOLVED, scores=scores)
+            self.lock.release()
+            self.users[0].leave_room_remove()
+        else:
+            self.lock.release()
 
     def set_value(self, name, x, y, value, prev, **kargs):
         self.lock.acquire()
@@ -80,7 +85,10 @@ class Room(object):
             if not solved:
                 break
         if solved:
-            self.__send_notification(SUDOKU_SOLVED, scores=self.__scores)
+            score = []
+            for user in self.users:
+                score.append((user.name, self.__scores[user.id]))
+            self.__send_notification(SUDOKU_SOLVED, scores=score)
         self.lock.release()
         return True
 

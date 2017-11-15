@@ -41,4 +41,5 @@ class RoomManager(object):
         """
         deletes given room from list of rooms
         """
-        self.__rooms.remove(room)
+        if room in self.__rooms:
+            self.__rooms.remove(room)
