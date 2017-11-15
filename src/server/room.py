@@ -41,11 +41,16 @@ class Room(object):
 
     def remove_client(self, client):
         self.lock.acquire()
-        self.users.remove(client)
+        if client in self.users:
+            self.users.remove(client)
         self.__people_changed_notification()
         if len(self.users) == 1:
-            self.__send_notification(SUDOKU_SOLVED, scores=self.__scores)
-        self.lock.release()
+            scores = [(self.users[0].name, self.__scores[self.users[0].id])]
+            self.__send_notification(SUDOKU_SOLVED, scores=scores)
+            self.lock.release()
+            self.users[0].leave_room_remove()
+        else:
+            self.lock.release()
 
     def set_value(self, name, x, y, value, prev, **kargs):
         self.lock.acquire()

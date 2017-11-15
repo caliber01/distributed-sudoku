@@ -22,4 +22,5 @@ class RoomManager(object):
         return room
 
     def remove_room(self, room):
-        self.__rooms.remove(room)
+        if room in self.__rooms:
+            self.__rooms.remove(room)

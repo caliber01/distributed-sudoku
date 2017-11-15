@@ -26,6 +26,7 @@ class ClientHandler(object):
             while True:
                 message = recv(self.socket)
                 if not message:
+                    self.leave_room_remove()
                     break
                 self._logger.info("New request from client %s" % (self.name))
                 self._logger.info(message)
@@ -34,11 +35,14 @@ class ClientHandler(object):
                     handler(message)
         except:
             self._logger.exception("Exception occurs in client %s" % (self.name))
-            if self.room != None:
-                self.room.remove_client(self)
-                if not len(self.room.users):
-                    self.room_manager.remove_room(self.room)
-                self.room = None
+            self.leave_room_remove()
+
+    def leave_room_remove(self):
+        if self.room != None:
+            self.room.remove_client(self)
+            if not len(self.room.users):
+                self.room_manager.remove_room(self.room)
+            self.room = None
 
     @handler(PRINT_MESSAGE)
     def print_message(self, args):
@@ -109,11 +113,8 @@ class ClientHandler(object):
 
     @handler(LEAVE_ROOM)
     def __leave_room(self, args):
-        if self.room:
-            self.room.remove_client(self)
-            if not len(self.room.users):
-                self.room_manager.remove_room(self.room)
-        self.__send(RESPONSE_OK)
+       self.leave_room_remove()
+       self.__send(RESPONSE_OK)
 
 
     @handler(START_GAME)
