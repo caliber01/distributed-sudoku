@@ -2,7 +2,6 @@ import client.events as events
 import common.protocol as protocol
 from common.listener import Listener, handler
 from threading import Thread
-from client.request_response import RequestResponseConnection
 import logging
 
 logger = logging.getLogger(__name__)
@@ -13,20 +12,20 @@ class ClientLogic(Listener):
     Class to react on GUI events, call networking requests, notify GUI about new state
     Runs in separate thread
     """
-    def __init__(self, in_queue, out_queue, listening_port):
+    def __init__(self, in_queue, out_queue, connection):
         """
         :param in_queue: queue to subscribe to events (Subscription done in Listener baseclass)
         :param out_queue: queue to publish events for GUI
+        :param connection: abstracted connection
         """
         super(ClientLogic, self).__init__(in_queue)
         self._out_queue = out_queue
         self._session = {}
-        self._listening_port = listening_port
 
         self._is_running = True
         self._thread = Thread(target=self.run)
         self._thread.start()
-        self._connection = RequestResponseConnection()
+        self._connection = connection
 
     def run(self):
         """
@@ -50,7 +49,8 @@ class ClientLogic(Listener):
     def connect_to_server(self, server):
         self._session['server'] = server
         try:
-            self._connection.connect(server, self._listening_port)
+            local_listening_port = self._connection.connect(server)
+            self._connection.request(type=protocol.CLIENT_START_LISTEN, port=local_listening_port)
             self.__set_name_request()
         except Exception as e:
             logger.error(e)
