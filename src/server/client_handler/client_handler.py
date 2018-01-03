@@ -11,6 +11,10 @@ class ClientHandlerBase(object):
         self.name = "Undefined"
         self.id = str(uuid.uuid1())
         self.handlers = defaultdict(list)
+        for attr_name in dir(self):
+            attr = getattr(self, attr_name)
+            if callable(attr) and hasattr(attr, 'handled_event'):
+                self.handlers[attr.handled_event].append(attr)
 
     def leave_room_remove(self):
         if self.room is not None:
@@ -20,7 +24,8 @@ class ClientHandlerBase(object):
             self.room = None
 
     def send_notification(self, type, **kwargs):
-        raise NotImplementedError()
+        for handler in self.handlers[type]:
+            handler(**kwargs)
 
     def run(self):
         raise NotImplementedError()
@@ -43,22 +48,17 @@ class ClientHandlerBase(object):
     def get_available_rooms(self):
         raise NotImplementedError()
 
-    @handler(LEAVE_ROOM)
     def __leave_room(self):
         raise NotImplementedError()
 
-    @handler(START_GAME)
     def __start_game(self, **kwargs):
         raise NotImplementedError()
 
-    @handler(PEOPLE_CHANGED)
     def __people_changed(self, **kwargs):
         raise NotImplementedError()
 
-    @handler(SUDOKU_SOLVED)
     def __sudoku_solved(self, **kwargs):
        raise NotImplementedError()
 
-    @handler(SUDOKU_CHANGED)
     def __sudoku_changed(self, **kwargs):
         raise NotImplementedError()

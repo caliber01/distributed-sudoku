@@ -1,5 +1,6 @@
 from server.server_obj import Server
 from server.networking.tcp.server_connection import TCPServerConnection
+from server.networking.rpc.server_connection import RPCServerConnection
 from common.protocol import DEFAULT_PORT, DEFAULT_SERVER_INET_ADDR
 from argparse import ArgumentParser # Parsing command line arguments
 from server.server_types import *
@@ -37,7 +38,7 @@ if __name__ == '__main__':
     if args.type == TCP:
         server_connection = TCPServerConnection(args.listenaddr, int(args.listenport))
     elif args.type == RPC:
-        server_connection = None
+        server_connection = RPCServerConnection(args.listenaddr, int(args.listenport))
     else:
         server_connection = None
     server = Server(server_connection, args.type)

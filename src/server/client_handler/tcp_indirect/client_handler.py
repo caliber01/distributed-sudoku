@@ -7,10 +7,6 @@ class TCPClientHandler(ClientHandlerBase):
     def __init__(self, connection, room_manager):
         super(TCPClientHandler, self).__init__(room_manager)
         self.connection = connection
-        for attr_name in dir(self):
-            attr = getattr(self, attr_name)
-            if callable(attr) and hasattr(attr, 'handled_event'):
-                self.handlers[attr.handled_event].append(attr)
 
     def run(self):
         self.connection.listen(on_message=lambda type, args: self.__handle_event(type, args),
@@ -19,10 +15,6 @@ class TCPClientHandler(ClientHandlerBase):
     def __handle_event(self, t, message):
         for h in self.handlers[t]:
             h(message)
-
-    def send_notification(self, type, **kwargs):
-        for handler in self.handlers[type]:
-            handler(**kwargs)
 
     @handler(CLIENT_START_LISTEN)
     def __send_client_port(self, args):
