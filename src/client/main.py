@@ -31,7 +31,7 @@ if __name__ == '__main__':
     if arguments['--tcp']:
         host = ManualHost(TCPConnection(gui_queue))
     elif arguments['--rpc']:
-        host = RPCHost()
+        host = RPCHost(gui_queue)
     elif arguments['--indirect']:
         host = ManualHost(IndirectConnection(gui_queue))
     else:

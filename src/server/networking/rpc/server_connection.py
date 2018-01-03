@@ -1,6 +1,6 @@
 import socket
 import logging
-from server.networking.tcp.client_connection import TCPClientConnection
+from server.networking.rpc.client_connection import RPCClientConnection
 from server.networking.server_connection import ServerConnection
 
 from SimpleXMLRPCServer import SimpleXMLRPCServer
@@ -16,8 +16,12 @@ class Handler(object):
     def __init__(self, on_connection):
         self.on_connection = on_connection
 
-    def connect(self):
-        pass
+    def connect(self, ip):
+        logger.debug('Created client handler for  %s' % ip)
+        connection = RPCClientConnection(ip)
+        self.on_connection(connection)
+        return connection.server.server_address[1]
+
 
 class RPCServerConnection(ServerConnection):
     def __init__(self, ip, port):
@@ -38,21 +42,3 @@ class RPCServerConnection(ServerConnection):
         finally:
             server.shutdown()
             server.server_close()
-
-
-        logger.debug('Server socket created, descriptor %d' % self.s.fileno())
-        self.s.bind((self.ip, self.port))
-        logger.debug('Server socket bound on %s:%d' % self.s.getsockname())
-        logger.info('Accepting requests on TCP %s:%d' % self.s.getsockname())
-        self.s.listen(10000)
-        while True:
-            try:
-                logger.debug('Awaiting requests ...')
-                client_socket, endpoint = self.s.accept()
-                logger.debug('Created client handler for  %s:%d' % client_socket.getsockname())
-                connection = TCPClientConnection(client_socket)
-                on_connection(connection)
-            except:
-                logger.info('Exception occurs in main thread')
-                break
-        self.s.close()

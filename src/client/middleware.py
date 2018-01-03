@@ -96,7 +96,7 @@ class Middleware(QueueListener):
         x = ord(square[0]) - ord('A')
         y = int(square[1]) - 1
         try:
-            self._host.cell_edited(x=x, y=y, prev=prev_value, value=new_value)
+            self._host.cell_edited(x=x, y=y, prev_value=prev_value, new_value=new_value)
         except Exception as e:
             logger.exception('error editing cell')
             self._gui_queue.publish(events.ERROR_OCCURRED)
