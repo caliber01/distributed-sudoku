@@ -15,8 +15,7 @@ Options:
 """
 from docopt import docopt
 from client.gui import UI
-from client.logic import ClientLogic
-import client.events as events
+from client.middleware import Middleware
 from common.eventqueue import EventQueue
 from client.networking.tcp.connection import TCPConnection
 from client.networking.rpc.host import RPCHost
@@ -26,7 +25,7 @@ from client.networking.manual_host import ManualHost
 
 if __name__ == '__main__':
     arguments = docopt(__doc__, version='Distributed Sudoku 1.0')
-    client_logic_queue = EventQueue()
+    requests_queue = EventQueue()
     gui_queue = EventQueue()
 
     if arguments['--tcp']:
@@ -38,10 +37,10 @@ if __name__ == '__main__':
     else:
         raise ValueError()
 
-    client_logic = ClientLogic(client_logic_queue, gui_queue, host)
-    ui = UI(gui_queue, client_logic_queue)
+    middleware = Middleware(requests_queue, gui_queue, host)
+    ui = UI(gui_queue, requests_queue)
 
     ui.render_welcome()
-    client_logic_queue.publish(events.QUIT)
+    middleware.shutdown()
 
 

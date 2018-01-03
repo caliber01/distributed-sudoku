@@ -3,24 +3,29 @@ Module to abstract networking operations, data representation
 Message is as tring of format {length_of_message}{body}
 """
 import json
-from functools import wraps
-import socket
-import errno
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 RECV_BUFFER_BYTES = 1024
 MSG_SIZE_BYTES = 10
 
 
-def request(sock, **kargs):
+def request(sock, **kwargs):
     """
     :param sock: socket to use for connection
     :param request_type: constant from common.protocol
-    :param kargs: all other parameters are must be named, they are gathered and converted to JSON
+    :param kwargs: all other parameters are must be named, they are gathered and converted to JSON
     :return: response as dictionary
     """
-    send(sock, **kargs)
-    return recv(sock)
+    logger.debug('Sending {}'.format(kwargs))
+    send(sock, **kwargs)
+    logger.debug('Awaiting response...')
+    response = recv(sock)
+    logger.debug('Got response {}'.format(response))
+    return response
 
 
 def recv(sock):

@@ -1,7 +1,7 @@
 import client.events as events
 from common.queuelistener import QueueListener, handler
 import tkFont
-from Tkinter import Tk, Toplevel
+from Tkinter import Tk
 import client.ui.nickname as nickname
 import client.ui.connect as connect
 import client.ui.connecting as connecting
@@ -25,13 +25,13 @@ class UI(QueueListener):
     Main class for user interface, runs in the main thread
     """
 
-    def __init__(self, in_queue, out_queue):
+    def __init__(self, gui_queue, requests_queue):
         """
-        :param in_queue: incoming messages queue
-        :param out_queue: messages queue to publish events for ClientLogic
+        :param gui_queue: incoming messages queue
+        :param requests_queue: messages queue to publish events for ClientLogic
         """
-        super(UI, self).__init__(in_queue)
-        self.out_queue = out_queue
+        super(UI, self).__init__(gui_queue)
+        self.out_queue = requests_queue
         root = Tk()
         self.root = root
         root.title('Distributed Sudoku')
@@ -135,6 +135,10 @@ class UI(QueueListener):
         self.waiting_frame.update_users(room["users"])
         self.waiting_frame.bind(waiting_list.LEAVE_ROOM, self._leave_room)
 
+    @handler(events.ERROR_OCCURRED)
+    def error(self, **args):
+        tkMessageBox.showerror('Error')
+
     # Notifications from server
 
     @handler(protocol.PEOPLE_CHANGED)
@@ -190,7 +194,6 @@ class UI(QueueListener):
             return
         self.out_queue.publish(events.LOAD_ROOMS)
         self.root.after(5000, self._load_rooms)
-
 
     def _destroy_dashboard(self):
         if self.dashboard_frame:

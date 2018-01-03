@@ -33,6 +33,7 @@ class ManualHost(Host):
         response = self._connection.request(**kwargs)
         if response['type'] != protocol.RESPONSE_OK:
             raise ValueError()
+        return response
 
     def shutdown(self):
         self._connection.shutdown()
