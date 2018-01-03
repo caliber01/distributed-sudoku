@@ -1,25 +1,32 @@
 from common.protocol import *
-from common.listener import Listener, handler
+from common.listener import handler
 from collections import defaultdict
 import uuid
 
 
-class ClientHandler(Listener):
+class ClientHandler(object):
     def __init__(self, connection, room_manager):
-        super(ClientHandler, self).__init__()
         self.id = str(uuid.uuid1())
         self.connection = connection
-        self.handlers = defaultdict(list)
         self.room_manager = room_manager
         self.room = None
         self.name = "Undefined"
+        self.handlers = defaultdict(list)
+        for attr_name in dir(self):
+            attr = getattr(self, attr_name)
+            if callable(attr) and hasattr(attr, 'handled_event'):
+                self.handlers[attr.handled_event].append(attr)
 
     def run(self):
-        self.connection.listen(on_message=lambda type, *args, **kwargs: self.handle_event(type, kwargs),
+        self.connection.listen(on_message=lambda type, args: self.handle_event(type, args),
                                on_terminate=self.leave_room_remove)
 
+    def handle_event(self, t, message):
+        for h in self.handlers[t]:
+            h(message)
+
     def leave_room_remove(self):
-        if self.room != None:
+        if self.room is not None:
             self.room.remove_client(self)
             if not len(self.room.users):
                 self.room_manager.remove_room(self.room)
@@ -78,7 +85,8 @@ class ClientHandler(Listener):
         print("room created %s %d" % (room.name, room.max_users))
 
     def send_notification(self, type, **kwargs):
-        self.handle_event(type, **kwargs)
+        for handler in self.handlers[type]:
+            handler(**kwargs)
 
     @handler(GET_ROOMS)
     def get_available_rooms(self, args):
@@ -94,7 +102,7 @@ class ClientHandler(Listener):
 
     @handler(START_GAME)
     def __start_game(self, **kwargs):
-        response = self.connection.notify(**kwargs)
+        response = self.connection.notify(type=START_GAME, **kwargs)
         # TODO Process error
         if response['type'] != RESPONSE_OK:
             return
