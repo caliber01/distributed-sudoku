@@ -50,7 +50,7 @@ class ClientLogic(QueueListener):
         self._session['server'] = server
         try:
             self._host.connect(server)
-            self._host.set_name(self._session['name'])
+            self._host.set_name(self._session['nickname'])
         except Exception as e:
             logger.error(e)
             self._out_queue.publish(events.ERROR_CONNECTING_TO_SERVER)

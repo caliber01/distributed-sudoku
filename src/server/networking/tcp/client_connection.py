@@ -33,8 +33,8 @@ class TCPClientConnection(ClientConnection):
         except:
             logger.debug("Exception occurs in client %s" % (self.name))
 
-    def open_notifications_connection(self, args):
-        self.s_to_client.connect((self.socket.getpeername()[0], args["port"]))
+    def open_notifications_connection(self, port):
+        self.s_to_client.connect((self.socket.getpeername()[0], port))
 
     def notify(self, type, **kwargs):
         return request(self.s_to_client, type=type, **kwargs)

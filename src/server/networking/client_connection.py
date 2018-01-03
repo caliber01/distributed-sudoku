@@ -11,7 +11,7 @@ class ClientConnection(object):
     def respond(self, type, **kwargs):
         raise NotImplementedError()
 
-    def open_notifications_connection(self, args):
+    def open_notifications_connection(self, port):
         raise NotImplementedError()
 
     def notify(self, type, **kwargs):

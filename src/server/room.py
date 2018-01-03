@@ -63,7 +63,7 @@ class Room(object):
         else:
             self.lock.release()
 
-    def set_value(self, name, x, y, value, prev, **kargs):
+    def set_value(self, name, x, y, value, prev):
         self.lock.acquire()
 
         if self.__sudoku.unsolved[x][y] != prev:

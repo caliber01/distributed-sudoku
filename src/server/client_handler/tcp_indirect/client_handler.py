@@ -1,66 +1,61 @@
 from common.protocol import *
 from common.listener import handler
-from collections import defaultdict
-import uuid
+from server.client_handler.client_handler import ClientHandlerBase
 
 
-class ClientHandler(object):
+class TCPClientHandler(ClientHandlerBase):
     def __init__(self, connection, room_manager):
-        self.id = str(uuid.uuid1())
+        super(TCPClientHandler, self).__init__(room_manager)
         self.connection = connection
-        self.room_manager = room_manager
-        self.room = None
-        self.name = "Undefined"
-        self.handlers = defaultdict(list)
         for attr_name in dir(self):
             attr = getattr(self, attr_name)
             if callable(attr) and hasattr(attr, 'handled_event'):
                 self.handlers[attr.handled_event].append(attr)
 
     def run(self):
-        self.connection.listen(on_message=lambda type, args: self.handle_event(type, args),
+        self.connection.listen(on_message=lambda type, args: self.__handle_event(type, args),
                                on_terminate=self.leave_room_remove)
 
-    def handle_event(self, t, message):
+    def __handle_event(self, t, message):
         for h in self.handlers[t]:
             h(message)
 
-    def leave_room_remove(self):
-        if self.room is not None:
-            self.room.remove_client(self)
-            if not len(self.room.users):
-                self.room_manager.remove_room(self.room)
-            self.room = None
-
-    @handler(PRINT_MESSAGE)
-    def print_message(self, args):
-        print(args['message'])
-        self.connection.respond(RESPONSE_OK)
+    def send_notification(self, type, **kwargs):
+        for handler in self.handlers[type]:
+            handler(**kwargs)
 
     @handler(CLIENT_START_LISTEN)
-    def send_client_port(self, args):
-        self.connection.open_notifications_connection(args)
+    def __send_client_port(self, args):
+        self.send_client_port(args["port"])
+
+    def send_client_port(self, port):
+        self.connection.open_notifications_connection(port)
         self.connection.respond(RESPONSE_OK)
 
     @handler(SET_SUDOKU_VALUE)
-    def set_sudoku_value(self, args):
-        if self.room.set_value(name=self.id, **args):
+    def __set_sudoku_value(self, args):
+        self.set_sudoku_value(args["x"], args["y"], args["value"], args["previous"])
+
+    def set_sudoku_value(self, x, y, value, previous):
+        if self.room.set_value(self.id, x, y, value, previous):
             self.connection.respond(RESPONSE_OK)
         else:
             self.connection.respond(TOO_LATE)
 
-    @handler(GET_SCORE)
-    def get_score(self):
-        self.room.get_score()
-
     @handler(SET_NAME)
-    def set_name(self, args):
-        self.name = args["name"]
+    def __set_name(self, args):
+        self.set_name(args["name"])
+
+    def set_name(self, name):
+        self.name = name
         self.connection.respond(RESPONSE_OK)
 
     @handler(JOIN_ROOM)
-    def join_to_room(self, args):
-        self.room = self.room_manager.get_room_by_id(args["id"])
+    def __join_to_room(self, args):
+        self.join_to_room(args["id"])
+
+    def join_to_room(self, id):
+        self.room = self.room_manager.get_room_by_id(id)
         if self.room != None:
             try:
                 self.room.add_client(self)
@@ -70,35 +65,39 @@ class ClientHandler(object):
                     names = []
                     for user in self.room.users:
                         names.append(user.name)
-                    self.connection.respond(RESPONSE_OK, started=False, users=names, name=self.room.name, max=self.room.max_users, need_users=(self.room.max_users - len(names)))
+                    self.connection.respond(RESPONSE_OK, started=False, users=names, name=self.room.name,
+                                            max=self.room.max_users, need_users=(self.room.max_users - len(names)))
             except:
                 self.connection.notify(TOO_LATE)
         else:
             self.connection.respond(NOT_FOUND)
 
     @handler(REQUEST_CREATE_ROOM)
-    def create_room(self, args):
-        room = self.room_manager.create_room(args["name"], args["max_users"])
+    def __create_room(self, args):
+        self.create_room(args["name"], args["max_users"])
+
+    def create_room(self, name, max_users):
+        room = self.room_manager.create_room(name, max_users)
         self.connection.respond(RESPONSE_OK, name=room.name, max=room.max_users)
         room.add_client(self)
         self.room = room
         print("room created %s %d" % (room.name, room.max_users))
 
-    def send_notification(self, type, **kwargs):
-        for handler in self.handlers[type]:
-            handler(**kwargs)
 
     @handler(GET_ROOMS)
-    def get_available_rooms(self, args):
+    def __get_available_rooms(self, args):
+        self.get_available_rooms()
+
+    def get_available_rooms(self):
         rooms = []
         for room in self.room_manager.get_available_rooms():
             rooms.append({"name": room.name, "max": room.max_users, "current": len(room.users), "id": room.id})
-        self.connection.respond(RESPONSE_OK, rooms = rooms)
+        self.connection.respond(RESPONSE_OK, rooms=rooms)
 
     @handler(LEAVE_ROOM)
     def __leave_room(self, args):
-       self.leave_room_remove()
-       self.connection.respond(RESPONSE_OK)
+        self.leave_room_remove()
+        self.connection.respond(RESPONSE_OK)
 
     @handler(START_GAME)
     def __start_game(self, **kwargs):
