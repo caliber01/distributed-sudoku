@@ -14,24 +14,13 @@ def handler(event):
 
 
 class Listener(object):
-    """
-    Base class for classes that listen to events on in_queue
-    methods of subclass decorated with @handler will be called when in_queue receives some event
-    """
-
-    def __init__(self, in_queue):
-        self.in_queue = in_queue
+    def __init__(self):
         self.handlers = defaultdict(list)
         for attr_name in dir(self):
             attr = getattr(self, attr_name)
             if callable(attr) and hasattr(attr, 'handled_event'):
                 self.handlers[attr.handled_event].append(attr)
 
-    def handle_event(self, block):
-        event, args, kargs = self.in_queue.get(block)
+    def handle_event(self, event, *args, **kwargs):
         for event_handler in self.handlers[event]:
-            event_handler(*args, **kargs)
-
-
-
-
+            event_handler(*args, **kwargs)

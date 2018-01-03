@@ -1,7 +1,7 @@
 import socket
 from threading import Thread
 import server.client_handler
-from common.listener import  Listener
+from common.queuelistener import  QueueListener
 from server.room_manager import RoomManager
 
 
@@ -24,11 +24,12 @@ class Server(object):
             try:
                 self.logger.debug('Awaiting requests ...')
                 client_socket, endpoint = self.s.accept()
-                self.logger.debug('Created cliend handler for  %s:%d' % client_socket.getsockname())
+                self.logger.debug('Created client handler for  %s:%d' % client_socket.getsockname())
                 client = server.client_handler.ClientHandler(client_socket, self.room_manager, self.logger)
                 self.clients[id] = client
                 t = Thread(target=client.run)
                 t.start()
             except:
                 self.logger.info('Exception occurs in main thread')
+                break
         self.s.close()

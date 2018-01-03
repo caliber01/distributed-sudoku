@@ -1,13 +1,13 @@
 import client.events as events
 import common.protocol as protocol
-from common.listener import Listener, handler
+from common.queuelistener import QueueListener, handler
 from threading import Thread
 import logging
 
 logger = logging.getLogger(__name__)
 
 
-class ClientLogic(Listener):
+class ClientLogic(QueueListener):
     """
     Class to react on GUI events, call networking requests, notify GUI about new state
     Runs in separate thread
@@ -32,7 +32,7 @@ class ClientLogic(Listener):
         Run the Listener infinitely
         """
         while self._is_running:
-            self.handle_event(block=True)
+            self.handle_queue_event(block=True)
 
     @handler(events.QUIT)
     def quit(self):

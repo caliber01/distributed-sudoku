@@ -1,5 +1,5 @@
 import client.events as events
-from common.listener import Listener, handler
+from common.queuelistener import QueueListener, handler
 import tkFont
 from Tkinter import Tk, Toplevel
 import client.ui.nickname as nickname
@@ -20,7 +20,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class UI(Listener):
+class UI(QueueListener):
     """
     Main class for user interface, runs in the main thread
     """
@@ -80,7 +80,7 @@ class UI(Listener):
 
     def _check_events(self):
         try:
-            self.handle_event(block=False)
+            self.handle_queue_event(block=False)
         except Empty:
             pass
         self.root.after(1000, self._check_events)

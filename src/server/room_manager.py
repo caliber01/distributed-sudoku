@@ -1,7 +1,7 @@
 from server.room import Room
 
-class RoomManager(object):
 
+class RoomManager(object):
     def __init__(self, logger):
         """
         creates room manager that has list of rooms and logger
