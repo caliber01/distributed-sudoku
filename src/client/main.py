@@ -19,8 +19,10 @@ from client.logic import ClientLogic
 import client.events as events
 from common.eventqueue import EventQueue
 from client.networking.tcp.connection import TCPConnection
-from client.networking.rpc.connection import RPCConnection
+from client.networking.rpc.host import RPCHost
 from client.networking.indirect.connection import IndirectConnection
+from client.networking.manual_host import ManualHost
+
 
 if __name__ == '__main__':
     arguments = docopt(__doc__, version='Distributed Sudoku 1.0')
@@ -28,15 +30,15 @@ if __name__ == '__main__':
     gui_queue = EventQueue()
 
     if arguments['--tcp']:
-        connection = TCPConnection(gui_queue)
+        host = ManualHost(TCPConnection(gui_queue))
     elif arguments['--rpc']:
-        connection = RPCConnection(gui_queue)
+        host = RPCHost()
     elif arguments['--indirect']:
-        connection = IndirectConnection(gui_queue)
+        host = ManualHost(IndirectConnection(gui_queue))
     else:
         raise ValueError()
 
-    client_logic = ClientLogic(client_logic_queue, gui_queue, connection)
+    client_logic = ClientLogic(client_logic_queue, gui_queue, host)
     ui = UI(gui_queue, client_logic_queue)
 
     ui.render_welcome()
