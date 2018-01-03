@@ -7,9 +7,9 @@ logger = logging.getLogger(__name__)
 
 
 class TCPClientConnection(ClientConnection):
-    def __init__(self, socket):
+    def __init__(self, client_socket):
         super(TCPClientConnection, self).__init__()
-        self.socket = socket
+        self.socket = client_socket
         self.s_to_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     def listen(self, on_message, on_terminate):
