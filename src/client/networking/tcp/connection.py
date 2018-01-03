@@ -1,6 +1,7 @@
 from client.networking.connection import Connection
 from client.networking.tcp.notifications_listener import NotificationsListener
 from client.networking.tcp.blocking_connection import BlockingConnection
+import common.protocol as protocol
 import logging
 
 
@@ -21,7 +22,7 @@ class TCPConnection(Connection):
         port = self._notifications_listener.bind()
         self._notifications_listener.listen_in_thread()
         self._connection.connect(server)
-        return port
+        self._connection.request(type=protocol.CLIENT_START_LISTEN, port=port)
 
     def request(self, *args, **kwargs):
         return self._connection.request(*args, **kwargs)

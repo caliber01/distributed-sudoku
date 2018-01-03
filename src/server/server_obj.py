@@ -4,14 +4,14 @@ import server.client_handler
 from common.listener import  Listener
 from server.room_manager import RoomManager
 
-class Server(Listener):
+
+class Server(object):
     def __init__(self, ip, port, logger):
         self.ip = ip
         self.port = port
         self.clients = {}
         self.logger = logger
         self.room_manager = RoomManager(self.logger)
-
 
     def run(self):
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

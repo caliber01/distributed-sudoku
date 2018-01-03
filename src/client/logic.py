@@ -49,8 +49,7 @@ class ClientLogic(Listener):
     def connect_to_server(self, server):
         self._session['server'] = server
         try:
-            local_listening_port = self._connection.connect(server)
-            self._connection.request(type=protocol.CLIENT_START_LISTEN, port=local_listening_port)
+            self._connection.connect(server)
             self.__set_name_request()
         except Exception as e:
             logger.error(e)

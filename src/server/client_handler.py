@@ -6,6 +6,7 @@ from collections import defaultdict
 from common.networking import request
 import uuid
 
+
 class ClientHandler(object):
     def __init__(self, s, room_manager, logger):
         self.id = str(uuid.uuid1())
@@ -48,7 +49,6 @@ class ClientHandler(object):
     def print_message(self, args):
         print(args['message'])
         self.__send(RESPONSE_OK)
-
 
     @handler(CLIENT_START_LISTEN)
     def send_client_port(self, args):
