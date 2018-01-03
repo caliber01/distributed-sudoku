@@ -2,19 +2,18 @@ from server.room import Room
 
 
 class RoomManager(object):
-    def __init__(self, logger):
+    def __init__(self):
         """
         creates room manager that has list of rooms and logger
         """
         self.__rooms = []
-        self._logger = logger
 
 
     def create_room(self, name, max_users):
         """
         creates a new room
         """
-        room = Room(name, max_users, self._logger)
+        room = Room(name, max_users)
         self.__rooms.append(room)
         return room
 

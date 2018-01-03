@@ -5,10 +5,9 @@ import uuid
 
 
 class ClientHandler(Listener):
-    def __init__(self, connection, room_manager, logger):
+    def __init__(self, connection, room_manager):
         super(ClientHandler, self).__init__()
         self.id = str(uuid.uuid1())
-        self._logger = logger
         self.connection = connection
         self.handlers = defaultdict(list)
         self.room_manager = room_manager
@@ -78,9 +77,8 @@ class ClientHandler(Listener):
         self.room = room
         print("room created %s %d" % (room.name, room.max_users))
 
-    def send_notification(self, type, **args):
-        for handler in self.handlers[type]:
-            handler(**args)
+    def send_notification(self, type, **kwargs):
+        self.handle_event(type, **kwargs)
 
     @handler(GET_ROOMS)
     def get_available_rooms(self, args):

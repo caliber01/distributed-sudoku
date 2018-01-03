@@ -1,4 +1,5 @@
 from server.server_obj import Server
+from server.networking.tcp.server_connection import TCPServerConnection
 from common.protocol import DEFAULT_PORT, DEFAULT_SERVER_INET_ADDR
 from argparse import ArgumentParser # Parsing command line arguments
 import logging
@@ -25,5 +26,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     # Starting server
     LOG.info('%s version %s started ...' % (___NAME, ___VER))
-    server = Server(args.listenaddr, int(args.listenport), LOG)
+    server_connection = TCPServerConnection(args.listenaddr, int(args.listenport))
+    server = Server(server_connection)
     server.run()

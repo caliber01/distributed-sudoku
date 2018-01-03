@@ -1,35 +1,21 @@
-import socket
 from threading import Thread
-import server.client_handler
-from common.queuelistener import  QueueListener
+from server.client_handler import ClientHandler
 from server.room_manager import RoomManager
 
 
 class Server(object):
-    def __init__(self, ip, port, logger):
-        self.ip = ip
-        self.port = port
+    def __init__(self, server_connection):
+        self.server_connection = server_connection
         self.clients = {}
-        self.logger = logger
-        self.room_manager = RoomManager(self.logger)
+        self.room_manager = RoomManager()
+
+    def new_client(self, connection):
+        client = ClientHandler(connection, self.room_manager)
+        self.clients[client.id] = client
+        t = Thread(target=client.run)
+        t.start()
 
     def run(self):
-        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.logger.debug('Server socket created, descriptor %d' % self.s.fileno())
-        self.s.bind((self.ip, self.port))
-        self.logger.debug('Server socket bound on %s:%d' % self.s.getsockname())
-        self.logger.info('Accepting requests on TCP %s:%d' % self.s.getsockname())
-        self.s.listen(10000)
-        while True:
-            try:
-                self.logger.debug('Awaiting requests ...')
-                client_socket, endpoint = self.s.accept()
-                self.logger.debug('Created client handler for  %s:%d' % client_socket.getsockname())
-                client = server.client_handler.ClientHandler(client_socket, self.room_manager, self.logger)
-                self.clients[id] = client
-                t = Thread(target=client.run)
-                t.start()
-            except:
-                self.logger.info('Exception occurs in main thread')
-                break
-        self.s.close()
+        self.server_connection.accept_connections(on_connection=self.new_client)
+
+

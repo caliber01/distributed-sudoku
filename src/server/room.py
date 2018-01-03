@@ -10,13 +10,12 @@ logger = logging.getLogger(__name__)
 
 
 class Room(object):
-    def __init__(self, name, max_users, logger):
+    def __init__(self, name, max_users):
         """
         creates new game
         """
         self.id = str(uuid.uuid1())
-        self._logger = logger
-        self._logger.info("Room \"%s\" created" % (name))
+        logger.info("Room \"%s\" created" % (name))
         self.lock = threading.Lock()
         self.name = name
         self.users = []
