@@ -1,9 +1,12 @@
 import client.events as events
 from common.queuelistener import QueueListener, handler
-from threading import Thread, Event
+from threading import Thread
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+QUIT = 'QUIT'
 
 
 class Middleware(QueueListener):
@@ -20,9 +23,9 @@ class Middleware(QueueListener):
         super(Middleware, self).__init__(requests_queue)
         self._gui_queue = gui_queue
         self._session = {}
+        self._is_running = True
 
         self._host = host
-        self._shutdown_event = Event()
         self._thread = Thread(target=self._run)
         self._thread.start()
 
@@ -30,13 +33,17 @@ class Middleware(QueueListener):
         """
         Run the Listener infinitely
         """
-        while not self._shutdown_event.is_set():
+        while self._is_running:
             self.handle_queue_event(block=True)
 
     def shutdown(self):
         logger.info('Shutting down Logic')
+        self.in_queue.publish(QUIT)
         self._host.shutdown()
-        self._shutdown_event.set()
+
+    @handler(QUIT)
+    def quit(self):
+        self._is_running = False
 
     @handler(events.SUBMIT_NICKNAME)
     def submit_nickname(self, nickname):

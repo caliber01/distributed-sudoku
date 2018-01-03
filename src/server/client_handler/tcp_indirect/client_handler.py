@@ -83,7 +83,6 @@ class TCPClientHandler(ClientHandlerBase):
         self.room = room
         print("room created %s %d" % (room.name, room.max_users))
 
-
     @handler(GET_ROOMS)
     def __get_available_rooms(self, args):
         self.get_available_rooms()
