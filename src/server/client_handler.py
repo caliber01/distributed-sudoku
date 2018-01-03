@@ -108,14 +108,10 @@ class ClientHandler(object):
             rooms.append({"name": room.name, "max": room.max_users, "current": len(room.users), "id": room.id})
         self.__send(RESPONSE_OK, rooms = rooms)
 
-    def __request(self, type, **kargs):
-        return request(self.s, type=type, **kargs)
-
     @handler(LEAVE_ROOM)
     def __leave_room(self, args):
        self.leave_room_remove()
        self.__send(RESPONSE_OK)
-
 
     @handler(START_GAME)
     def __start_game(self, **kargs):
@@ -149,4 +145,4 @@ class ClientHandler(object):
         try:
             send(self.socket, type=type, **kargs)
         except:
-            self.logger.debug("Exception occurs in client %s" % (self.name))
+            self._logger.debug("Exception occurs in client %s" % (self.name))
