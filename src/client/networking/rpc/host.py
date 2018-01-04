@@ -40,5 +40,5 @@ class RPCHost(Host):
         return self.host.leave_room()
 
     def shutdown(self):
-        if self.host:
+        if self.host is not None:
             self.host.terminate()

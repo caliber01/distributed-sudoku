@@ -47,6 +47,7 @@ class RPCServerConnection(ServerConnection):
             server.timeout = 5
             while True:
                 if shutdown_event.is_set():
+                    logger.info('Shut down server connection')
                     server.shutdown()
                     return
                 try:

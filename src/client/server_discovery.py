@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 class ServerDiscovery(Thread):
     def __init__(self, gui_queue):
         self.gui_queue = gui_queue
+        self._shutdown_event = None
         super(ServerDiscovery, self).__init__(target=self._run)
 
     def start(self):
@@ -48,5 +49,6 @@ class ServerDiscovery(Thread):
                 continue
 
     def shutdown(self):
-        self._shutdown_event.set()
-        logger.info('Stop server discover')
+        if self._shutdown_event:
+            self._shutdown_event.set()
+            logger.info('Stop server discovery')

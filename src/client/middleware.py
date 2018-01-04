@@ -32,7 +32,6 @@ class Middleware(QueueListener):
         self._host = host
         self._thread = Thread(target=self._run)
         self._thread.start()
-        self._server_thread = None
         self._server_shutdown_event = Event()
         self._server_discovery = ServerDiscovery(gui_queue)
 
@@ -80,8 +79,7 @@ class Middleware(QueueListener):
 
     @handler(events.HOST)
     def host_locally(self, server):
-        self._server_thread = Thread(target=serve, args=(self._server_type,) + server + (self._server_shutdown_event,))
-        self._server_thread.start()
+        serve(*(self._server_type,) + server + (self._server_shutdown_event,))
         self.connect_to_server(server)
 
     @handler(events.LOAD_ROOMS)

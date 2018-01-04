@@ -2,9 +2,11 @@ from server.networking.protocol.tcp.server_connection import TCPServerConnection
 from server.networking.rpc.server_connection import RPCServerConnection
 from server.room_manager import RoomManager
 from server.server_types import *
-from server.broadcast import start_broadcasting
+from server.broadcast import ServerBroadcaster
 from common.protocol import DEFAULT_PORT, DEFAULT_SERVER_INET_ADDR
 from argparse import ArgumentParser
+from threading import Thread
+import time
 import logging
 
 FORMAT = '%(asctime)-15s %(levelname)s %(message)s'
@@ -22,6 +24,18 @@ def __info():
     return '%s version %s (%s) %s' % (___NAME, ___VER, ___BUILT, ___VENDOR)
 
 
+class Server(Thread):
+    def __init__(self, server_connection, shutdown_event):
+        super(Server, self).__init__(target=self._run)
+        self.shutdown_event = shutdown_event
+        self.server_connection = server_connection
+        self.start()
+        time.sleep(3)
+
+    def _run(self):
+        self.server_connection.accept_connections(self.shutdown_event)
+
+
 def serve(server_type, addr=DEFAULT_SERVER_INET_ADDR, port=DEFAULT_PORT, shutdown_event=None):
     room_manager = RoomManager()
 
@@ -34,8 +48,8 @@ def serve(server_type, addr=DEFAULT_SERVER_INET_ADDR, port=DEFAULT_PORT, shutdow
     else:
         raise ValueError()
 
-    start_broadcasting('{}:{}'.format(addr, port))
-    server_connection.accept_connections(shutdown_event)
+    ServerBroadcaster('{}:{}'.format(addr, port), shutdown_event)
+    Server(server_connection, shutdown_event)
 
 
 if __name__ == '__main__':

@@ -25,6 +25,7 @@ class TCPServerConnection(ServerConnection):
         self.s.settimeout(5)
         while True:
             if shutdown_event.is_set():
+                logger.info('Shut down server connection')
                 break
             try:
                 logger.debug('Awaiting requests ...')
@@ -39,4 +40,5 @@ class TCPServerConnection(ServerConnection):
             except:
                 logger.exception('Exception occurs in main thread')
                 break
+        self.s.shutdown(socket.SHUT_RDWR)
         self.s.close()
