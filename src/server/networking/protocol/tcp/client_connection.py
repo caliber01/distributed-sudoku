@@ -1,5 +1,7 @@
 from common.networking import recv, send, request
-from server.networking.client_connection import ClientConnection
+from server.networking.protocol.client_connection import ClientConnection
+from common.errors import ProtocolError
+import common.protocol as protocol
 import logging
 import socket
 
@@ -21,13 +23,19 @@ class TCPClientConnection(ClientConnection):
                     break
                 logger.info("New request from client %s" % (self.name))
                 logger.info(message)
-                type = message['type']
-                on_message(type, message)
+                type = message.pop('type')
+                try:
+                    response = on_message(type, **message)
+                    self.respond(protocol.RESPONSE_OK,
+                                 **(response if response is not None else {}))
+                except ProtocolError as e:
+                    self.respond(e.code)
         except:
             logger.exception("Exception occurs in client %s" % (self.name))
             on_terminate()
 
     def respond(self, type, **kwargs):
+        print(kwargs)
         try:
             send(self.socket, type=type, **kwargs)
         except:

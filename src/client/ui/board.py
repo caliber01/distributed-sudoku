@@ -49,7 +49,7 @@ class Board(Frame):
                     e.config(state=DISABLED)
                 else:
                     var = StringVar()
-                    var.trace('w', self._get_cell_edit_handler(square))
+                    var.trace_id = var.trace('w', self._get_cell_edit_handler(square))
                     self.square_vars[square] = var
                     e = Entry(f, textvariable=var, **common_args)
                 e.grid(row=j // 3, column=j % 3, padx=5, pady=5, ipady=10)
@@ -75,7 +75,10 @@ class Board(Frame):
         if int(prev) == (value or 0):
             return
         self.matrix[square] = value
-        self.square_vars[square].set(value)
+        square_var = self.square_vars[square]
+        square_var.trace_vdelete("w", square_var.trace_id)
+        square_var.set(value)
+        square_var.trace_id = square_var.trace('w', self._get_cell_edit_handler(square))
 
 
 full_matrix = """

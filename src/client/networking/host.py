@@ -20,9 +20,6 @@ class Host(object):
     def leave_room(self):
         raise NotImplementedError()
 
-    def _request(self, **kwargs):
-        raise NotImplementedError()
-
     def shutdown(self):
         raise NotImplementedError()
 

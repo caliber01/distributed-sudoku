@@ -1,9 +1,11 @@
 from server.server_obj import Server
-from server.networking.tcp.server_connection import TCPServerConnection
+from server.networking.protocol.tcp.server_connection import TCPServerConnection
 from server.networking.rpc.server_connection import RPCServerConnection
-from common.protocol import DEFAULT_PORT, DEFAULT_SERVER_INET_ADDR
-from argparse import ArgumentParser # Parsing command line arguments
+from server.room_manager import RoomManager
+from server.client_handler import ClientHandler
 from server.server_types import *
+from common.protocol import DEFAULT_PORT, DEFAULT_SERVER_INET_ADDR
+from argparse import ArgumentParser
 import logging
 
 FORMAT = '%(asctime)-15s %(levelname)s %(message)s'
@@ -20,7 +22,6 @@ ___VENDOR = 'Copyright (c) Anton Potapchuk, Diana Grigoryan, Yevgenia Krivenko, 
 def __info():
     return '%s version %s (%s) %s' % (___NAME, ___VER, ___BUILT, ___VENDOR)
 
-
 if __name__ == '__main__':
     parser = ArgumentParser(description=__info())
     parser.add_argument('-l', '--listenaddr', help='Bind server socket to INET address, defaults to %s' % DEFAULT_SERVER_INET_ADDR, default=DEFAULT_SERVER_INET_ADDR)
@@ -35,11 +36,20 @@ if __name__ == '__main__':
 
     # Starting server
     LOG.info('%s version %s started ...' % (___NAME, ___VER))
+
+    room_manager = RoomManager()
+
+    def client_handler_factory():
+        return ClientHandler(room_manager)
+
     if args.type == TCP:
-        server_connection = TCPServerConnection(args.listenaddr, int(args.listenport))
+        server_connection = TCPServerConnection(args.listenaddr, int(args.listenport), client_handler_factory)
     elif args.type == RPC:
-        server_connection = RPCServerConnection(args.listenaddr, int(args.listenport))
-    else:
+        server_connection = RPCServerConnection(args.listenaddr, int(args.listenport), client_handler_factory)
+    elif args.type == INDIRECT:
         server_connection = None
-    server = Server(server_connection, args.type)
+    else:
+        raise ValueError()
+
+    server = Server(server_connection, room_manager)
     server.run()

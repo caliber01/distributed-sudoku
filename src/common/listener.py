@@ -23,4 +23,4 @@ class Listener(object):
 
     def handle_event(self, event, *args, **kwargs):
         for event_handler in self.handlers[event]:
-            event_handler(*args, **kwargs)
+            return event_handler(*args, **kwargs)

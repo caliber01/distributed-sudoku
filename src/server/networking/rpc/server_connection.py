@@ -1,6 +1,6 @@
 import socket
 import logging
-from server.networking.rpc.client_connection import RPCClientConnection
+from server.networking.rpc.client_proxy import RPCClientProxy
 from server.networking.server_connection import ServerConnection
 
 from SimpleXMLRPCServer import SimpleXMLRPCServer
@@ -9,28 +9,32 @@ from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler
 
 logger = logging.getLogger(__name__)
 
+
 class RPCHandler(SimpleXMLRPCRequestHandler):
     rpc_paths = ('/RPC2',)
 
-class Handler(object):
-    def __init__(self, on_connection):
+
+class ConnectionsHandler(object):
+    def __init__(self, client_handler_factory, on_connection):
+        self.client_handler_factory = client_handler_factory
         self.on_connection = on_connection
 
     def connect(self, ip):
         logger.debug('Created client handler for  %s' % ip)
-        connection = RPCClientConnection(ip)
-        self.on_connection(connection)
-        return connection.server.server_address[1]
+        client_handler = self.client_handler_factory()
+        client = RPCClientProxy(client_handler, ip)
+        self.on_connection(client)
 
 
 class RPCServerConnection(ServerConnection):
-    def __init__(self, ip, port):
+    def __init__(self, ip, port, client_handler_factory):
+        self.client_handler_factory = client_handler_factory
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.ip = ip
         self.port = port
 
     def accept_connections(self, on_connection):
-        handler = Handler(on_connection)
+        handler = ConnectionsHandler(on_connection, self.client_handler_factory)
         endpoint = (self.ip, self.port)
         server = SimpleXMLRPCServer(endpoint, requestHandler=RPCHandler)
         server.register_introspection_functions()

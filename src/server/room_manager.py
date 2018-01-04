@@ -7,7 +7,13 @@ class RoomManager(object):
         creates room manager that has list of rooms and logger
         """
         self.__rooms = []
+        self.__clients = {}
 
+    def add_client(self, client):
+        self.__clients[client.id] = client
+
+    def add_to_room(self, room_id, client_id):
+        self.get_room_by_id(room_id).add_client(self.__clients[client_id])
 
     def create_room(self, name, max_users):
         """
@@ -23,7 +29,6 @@ class RoomManager(object):
         available room means that this room is still in need of new players
         """
         return [room for room in self.__rooms if not room.full()]
-
 
     def get_room_by_id(self, id):
         """

@@ -1,6 +1,7 @@
 import client.events as events
 from common.queuelistener import QueueListener, handler
 from threading import Thread
+from common.errors import *
 import logging
 
 logger = logging.getLogger(__name__)
@@ -97,8 +98,11 @@ class Middleware(QueueListener):
         y = int(square[1]) - 1
         try:
             self._host.cell_edited(x=x, y=y, prev_value=prev_value, new_value=new_value)
-        except Exception as e:
-            logger.exception('error editing cell')
+        except TooLateError:
+            logger.exception('Error editing cell')
+            self._gui_queue.publish(events.ERROR_TOO_LATE)
+        except Exception:
+            logger.exception('Error editing cell')
             self._gui_queue.publish(events.ERROR_OCCURRED)
 
     @handler(events.LEAVE_ROOM)

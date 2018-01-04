@@ -83,7 +83,7 @@ class UI(QueueListener):
             self.handle_queue_event(block=False)
         except Empty:
             pass
-        self.root.after(1000, self._check_events)
+        self.root.after(100, self._check_events)
 
     def _handle_create_game(self, event):
         self.out_queue.publish(events.CREATE_ROOM, name=self.dashboard_frame.name, max_users=self.dashboard_frame.max_people)
@@ -135,9 +135,13 @@ class UI(QueueListener):
         self.waiting_frame.update_users(room["users"])
         self.waiting_frame.bind(waiting_list.LEAVE_ROOM, self._leave_room)
 
+    @handler(events.ERROR_TOO_LATE)
+    def too_late(self):
+        tkMessageBox.showinfo("Damn it!", "You seem to be too late on this cell")
+
     @handler(events.ERROR_OCCURRED)
     def error(self, **args):
-        tkMessageBox.showerror('Error')
+        tkMessageBox.showerror('Error', 'Unknown error occurred, we apologize!')
 
     # Notifications from server
 
@@ -164,10 +168,6 @@ class UI(QueueListener):
     @handler(protocol.SUDOKU_CHANGED)
     def sudoku_changed(self, **change):
         self.board_frame.update_cell(change['x'], change['y'], change['value'])
-
-    @handler(protocol.TOO_LATE)
-    def too_late(self):
-        tkMessageBox.showinfo("Damn it!", "You seem to be too late on this cell")
 
     @handler(protocol.SUDOKU_SOLVED)
     def sudoku_solved(self, scores, **kwargs):

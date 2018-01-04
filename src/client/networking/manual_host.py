@@ -1,5 +1,6 @@
 from client.networking.host import Host
 import common.protocol as protocol
+from common.errors import error_by_code
 
 
 class ManualHost(Host):
@@ -24,7 +25,7 @@ class ManualHost(Host):
         return self._request(type=protocol.REQUEST_CREATE_ROOM, name = name, max_users = max_users)
 
     def cell_edited(self, x, y, prev_value, new_value):
-        return self._request(type=protocol.SET_SUDOKU_VALUE, x=x, y=y, prev=prev_value, value=new_value)
+        return self._request(type=protocol.SET_SUDOKU_VALUE, x=x, y=y, previous=prev_value, value=new_value)
 
     def leave_room(self):
         return self._request(type=protocol.LEAVE_ROOM)
@@ -32,7 +33,7 @@ class ManualHost(Host):
     def _request(self, **kwargs):
         response = self._connection.request(**kwargs)
         if response['type'] != protocol.RESPONSE_OK:
-            raise ValueError()
+            raise error_by_code(response['type'])
         return response
 
     def shutdown(self):

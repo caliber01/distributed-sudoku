@@ -1,6 +1,7 @@
 import socket
 import logging
-from server.networking.tcp.client_connection import TCPClientConnection
+from server.networking.protocol.tcp.client_connection import TCPClientConnection
+from server.networking.protocol.client_proxy import ProtocolClientProxy
 from server.networking.server_connection import ServerConnection
 
 
@@ -8,7 +9,8 @@ logger = logging.getLogger(__name__)
 
 
 class TCPServerConnection(ServerConnection):
-    def __init__(self, ip, port):
+    def __init__(self, ip, port, client_handler_factory):
+        self.client_handler_factory = client_handler_factory
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.ip = ip
         self.port = port
@@ -25,8 +27,10 @@ class TCPServerConnection(ServerConnection):
                 client_socket, endpoint = self.s.accept()
                 logger.debug('Created client handler for  %s:%d' % client_socket.getsockname())
                 connection = TCPClientConnection(client_socket)
-                on_connection(connection)
+                client_handler = self.client_handler_factory()
+                client = ProtocolClientProxy(client_handler, connection)
+                on_connection(client)
             except:
-                logger.info('Exception occurs in main thread')
+                logger.exception('Exception occurs in main thread')
                 break
         self.s.close()

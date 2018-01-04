@@ -1,6 +1,6 @@
 from collections import defaultdict
 from server.sudoku import Sudoku
-from common.protocol import *
+from common.errors import *
 import threading
 import uuid
 
@@ -35,60 +35,55 @@ class Room(object):
         """
         adds new user to the game
         """
-        self.lock.acquire()
-        if self.full():
-            self.lock.release()
-            raise Exception
-        self.users.append(client)
-        if len(self.users) == self.max_users:
-            self.game_started = True
-            self.__send_notification(START_GAME, matrix=str(self.__sudoku.print_matrix()))
-        else:
-            self.__people_changed_notification(ignore=client)
-        self.lock.release()
+        with self.lock:
+            if self.full():
+                raise FullRoomError()
+            self.users.append(client)
+            if len(self.users) == self.max_users:
+                self.game_started = True
+                for user in self.users:
+                    user.notify_start_game(matrix=str(self.__sudoku.print_matrix()))
+            else:
+                self.__people_changed_notification(ignore=client)
 
     def remove_client(self, client):
         """
         deletes user from the game
         """
-        self.lock.acquire()
-        if client in self.users:
-            self.users.remove(client)
-        self.__people_changed_notification()
-        if len(self.users) == 1:
-            scores = [(self.users[0].name, self.__scores[self.users[0].id])]
-            self.__send_notification(SUDOKU_SOLVED, scores=scores)
-            self.lock.release()
-            self.users[0].leave_room_remove()
-        else:
-            self.lock.release()
+        with self.lock:
+            if client in self.users:
+                self.users.remove(client)
+            self.__people_changed_notification()
+            if len(self.users) == 1:
+                scores = [(self.users[0].name, self.__scores[self.users[0].id])]
+                for user in self.users:
+                    user.notify_sudoku_solved(scores)
+                self.users[0].leave_room_remove()
 
-    def set_value(self, name, x, y, value, prev):
-        self.lock.acquire()
+    def set_value(self, user_id, x, y, value, prev):
+        with self.lock:
+            if self.__sudoku.unsolved[x][y] != prev:
+                raise TooLateError()
+            if self.__sudoku.check(x, y, value):
+                self.__scores[user_id] += 1
+            else:
+                self.__scores[user_id] -= 1
+            self.__sudoku.unsolved[x][y] = value
+            for user in self.users:
+                if user.id is not user_id:
+                    user.notify_sudoku_changed(x=x, y=y, value=value)
 
-        if self.__sudoku.unsolved[x][y] != prev:
-            self.lock.release()
-            return False
-        if self.__sudoku.check(x, y, value):
-            self.__scores[name] += 1
-        else:
-            self.__scores[name] -= 1
-        self.__sudoku.unsolved[x][y] = value
-        self.__send_notification(SUDOKU_CHANGED, x=x, y=y, value=value, ignore=self)
+            if self.__is_sudoku_solved():
+                score = []
+                for user in self.users:
+                    score.append((user.name, self.__scores[user.id]))
+                    user.notify_sudoku_solved(scores=score)
 
-        solved = True
+    def __is_sudoku_solved(self):
         for i in range(9):
             for j in range(9):
                 if self.__sudoku.unsolved[i][j] != self.__sudoku.solved[i][j]:
-                    solved = False
-            if not solved:
-                break
-        if solved:
-            score = []
-            for user in self.users:
-                score.append((user.name, self.__scores[user.id]))
-            self.__send_notification(SUDOKU_SOLVED, scores=score)
-        self.lock.release()
+                    return False
         return True
 
     def get_score(self):
@@ -101,16 +96,12 @@ class Room(object):
         """
         creates notification if list of users in a game changes
         """
-        names = []
-        for user in self.users:
-            names.append(user.name)
-        self.__send_notification(PEOPLE_CHANGED, users=names, room_name=self.name, max_users=self.max_users, need_users=(self.max_users - len(names)), ignore=ignore)
+        names = [user.name for user in self.users]
 
-    def __send_notification(self, type, ignore=None, **kargs):
-        """
-        sends given notification
-        """
         for user in self.users:
             if user == ignore:
                 continue
-            user.send_notification(type, **kargs)
+            user.notify_people_changed(users=names, room_name=self.name,
+                                       max_users=self.max_users,
+                                       need_users=(self.max_users - len(names)))
+
