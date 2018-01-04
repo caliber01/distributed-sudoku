@@ -46,18 +46,18 @@ class Room(object):
             else:
                 self.__people_changed_notification(ignore=client)
 
-    def remove_client(self, client):
+    def remove_client(self, client_id):
         """
         deletes user from the game
         """
         with self.lock:
-            if client in self.users:
-                self.users.remove(client)
-            self.__people_changed_notification()
+            if client_id in [user.id for user in self.users]:
+                self.users = [user for user in self.users if user.id != client_id]
+                self.__people_changed_notification()
             if len(self.users) == 1:
                 scores = [(self.users[0].name, self.__scores[self.users[0].id])]
                 for user in self.users:
-                    user.notify_sudoku_solved(scores)
+                    user.notify_sudoku_solved(scores=scores)
                 self.users[0].leave_room_remove()
 
     def set_value(self, user_id, x, y, value, prev):
@@ -77,6 +77,7 @@ class Room(object):
                 score = []
                 for user in self.users:
                     score.append((user.name, self.__scores[user.id]))
+                for user in self.users:
                     user.notify_sudoku_solved(scores=score)
 
     def __is_sudoku_solved(self):

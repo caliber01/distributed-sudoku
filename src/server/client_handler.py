@@ -4,14 +4,14 @@ import uuid
 
 class ClientHandler(object):
     def __init__(self, room_manager):
+        self.id = str(uuid.uuid1())
         self.room_manager = room_manager
         self.room = None
         self.name = "Undefined"
-        self.id = str(uuid.uuid1())
 
     def leave_room_remove(self):
         if self.room is not None:
-            self.room.remove_client(self)
+            self.room.remove_client(self.id)
             if not len(self.room.users):
                 self.room_manager.remove_room(self.room)
             self.room = None

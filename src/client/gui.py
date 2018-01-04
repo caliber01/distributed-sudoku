@@ -117,7 +117,8 @@ class UI(QueueListener):
 
     @handler(events.ROOM_CREATED)
     def room_created(self, **room):
-        self.connecting_msg.destroy()
+        if self.connecting_msg:
+            self.connecting_msg.destroy()
         self.connecting_msg = None
         self._destroy_dashboard()
         if self.board_frame:
