@@ -22,3 +22,6 @@ class ClientProxy(object):
 
     def notify_sudoku_changed(self, **kwargs):
         raise NotImplementedError()
+
+    def shutdown(self):
+        raise NotImplementedError()

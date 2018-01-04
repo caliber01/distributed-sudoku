@@ -41,9 +41,9 @@ class Middleware(QueueListener):
         """
         while self._is_running:
             self.handle_queue_event(block=True)
+        logger.info('Shut down Middleware')
 
     def shutdown(self):
-        logger.info('Shutting down Middleware')
         self.in_queue.publish(QUIT)
         self._host.shutdown()
         self._server_shutdown_event.set()

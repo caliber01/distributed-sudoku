@@ -47,3 +47,7 @@ class RoomManager(object):
         """
         if room in self.__rooms:
             self.__rooms.remove(room)
+
+    def shutdown(self):
+        for client in self.__clients.values():
+            client.shutdown()

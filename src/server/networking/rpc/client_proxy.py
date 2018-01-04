@@ -94,3 +94,6 @@ class RPCClientProxy(ClientProxy):
 
     def notify_sudoku_changed(self, **kwargs):
         self.player.sudoku_changed(kwargs)
+
+    def shutdown(self):
+        self.server.shutdown()

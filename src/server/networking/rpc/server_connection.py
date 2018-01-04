@@ -4,8 +4,8 @@ from server.networking.rpc.client_proxy import RPCClientProxy
 from server.networking.server_connection import ServerConnection
 from server.client_handler import ClientHandler
 
-from SimpleXMLRPCServer import SimpleXMLRPCServer
 from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler
+from common.rpc import CustomXMLRPCServer
 
 
 logger = logging.getLogger(__name__)
@@ -38,7 +38,7 @@ class RPCServerConnection(ServerConnection):
     def accept_connections(self, shutdown_event):
         handler = ConnectionsHandler(self.room_manager)
         endpoint = (self.ip, self.port)
-        server = SimpleXMLRPCServer(endpoint, requestHandler=RPCHandler, allow_none=True)
+        server = CustomXMLRPCServer(endpoint, requestHandler=RPCHandler, allow_none=True)
         server.register_introspection_functions()
         server.register_instance(handler)
         if shutdown_event is None:
@@ -47,8 +47,9 @@ class RPCServerConnection(ServerConnection):
             server.timeout = 5
             while True:
                 if shutdown_event.is_set():
-                    logger.info('Shut down server connection')
                     server.shutdown()
+                    self.room_manager.shutdown()
+                    logger.info('Shut down server connection')
                     return
                 try:
                     server.handle_request()

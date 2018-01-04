@@ -1,4 +1,9 @@
 from SimpleXMLRPCServer import SimpleXMLRPCServer
+import socket
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 class CustomXMLRPCServer(SimpleXMLRPCServer):
@@ -7,8 +12,13 @@ class CustomXMLRPCServer(SimpleXMLRPCServer):
         self.should_shutdown = False
 
     def serve_forever(self, poll_interval=0.5):
+        self.timeout = 5
         while not self.should_shutdown:
-            self.handle_request()
+            try:
+                self.handle_request()
+            except socket.error:
+                continue
+        logger.info('Stop serving')
 
     def shutdown(self):
         self.should_shutdown = True
