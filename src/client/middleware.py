@@ -4,6 +4,7 @@ from threading import Thread, Event
 from common.errors import *
 import logging
 from server.main import serve
+from client.server_discovery import ServerDiscovery
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +34,7 @@ class Middleware(QueueListener):
         self._thread.start()
         self._server_thread = None
         self._server_shutdown_event = Event()
+        self._server_discovery = ServerDiscovery(gui_queue)
 
     def _run(self):
         """
@@ -42,10 +44,11 @@ class Middleware(QueueListener):
             self.handle_queue_event(block=True)
 
     def shutdown(self):
-        logger.info('Shutting down Logic')
+        logger.info('Shutting down Middleware')
         self.in_queue.publish(QUIT)
         self._host.shutdown()
         self._server_shutdown_event.set()
+        self._server_discovery.shutdown()
 
     @handler(QUIT)
     def quit(self):
@@ -54,7 +57,14 @@ class Middleware(QueueListener):
     @handler(events.SUBMIT_NICKNAME)
     def submit_nickname(self, nickname):
         self._session['nickname'] = nickname
-        logger.info(nickname)
+
+    @handler(events.START_SERVER_DISCOVERY)
+    def start_server_discovery(self):
+        self._server_discovery.start()
+
+    @handler(events.STOP_SERVER_DISCOVERY)
+    def stop_server_discovery(self):
+        self._server_discovery.shutdown()
 
     @handler(events.CONNECT_TO_SERVER)
     def connect_to_server(self, server):
@@ -122,8 +132,8 @@ class Middleware(QueueListener):
         try:
             self._host.leave_room()
             self._gui_queue.publish(events.ROOM_LEAVED)
-        except Exception as e:
-            logger.exception('nrror leaving room')
+        except Exception:
+            logger.exception('error leaving room')
             self._gui_queue.publish(events.ERROR_OCCURRED)
 
     @handler(events.GAME_ENDED)

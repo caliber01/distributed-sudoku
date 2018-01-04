@@ -63,6 +63,8 @@ class UI(QueueListener):
         self.session['nickname'] = self.nickname_frame.nickname
         self.nickname_frame.destroy()
         self.nickname_frame = None
+
+        self.out_queue.publish(events.START_SERVER_DISCOVERY)
         self.connect_frame = connect.Connect(master=self.root)
         self.connect_frame.bind(connect.CONNECT, self._handle_connect)
         self.connect_frame.bind(connect.HOST, self._handle_host)
@@ -109,6 +111,12 @@ class UI(QueueListener):
         self.connect_frame.destroy()
         self.connect_frame = None
         self._show_dashboard()
+        self.out_queue.publish(events.STOP_SERVER_DISCOVERY)
+
+    @handler(events.DISCOVERED_SERVERS)
+    def discovered_servers(self, servers):
+        if self.connect_frame:
+            self.connect_frame.set_servers(servers)
 
     @handler(events.ROOM_LEAVED)
     def room_leaved(self):

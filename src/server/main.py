@@ -2,6 +2,7 @@ from server.networking.protocol.tcp.server_connection import TCPServerConnection
 from server.networking.rpc.server_connection import RPCServerConnection
 from server.room_manager import RoomManager
 from server.server_types import *
+from server.broadcast import start_broadcasting
 from common.protocol import DEFAULT_PORT, DEFAULT_SERVER_INET_ADDR
 from argparse import ArgumentParser
 import logging
@@ -33,6 +34,7 @@ def serve(server_type, addr=DEFAULT_SERVER_INET_ADDR, port=DEFAULT_PORT, shutdow
     else:
         raise ValueError()
 
+    start_broadcasting('{}:{}'.format(addr, port))
     server_connection.accept_connections(shutdown_event)
 
 

@@ -32,6 +32,10 @@ class Connect(Frame):
         self.ports = {protocol.DEFAULT_PORT}
         self.address = ""
         self.port = ""
+
+        self._servers = []
+        self._servers_var = StringVar()
+
         self.create_widgets()
         self.grid(row=0, column=0, padx=40, pady=40)
 
@@ -40,8 +44,8 @@ class Connect(Frame):
         creates widget in connection frame
         it contains a form where user need to fill in address and port
         """
-        self._main_label = Label(self, text='Please specify server address')
-        self._main_label.grid(row=0, columnspan=3)
+        self._host_label = Label(self, text='Host local game')
+        self._host_label.grid(row=0, columnspan=3)
 
         self._address_label = Label(self, text='IP:')
         self._address_label.grid(row=1, pady=20)
@@ -60,26 +64,32 @@ class Connect(Frame):
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(2, weight=1)
 
-        self._button_continue = Button(self, text='Connect', command=self.connect)
-        self._button_continue.grid(row=4, column=1, pady=20, sticky='ew')
-
         self._host_button = Button(self, text='Host', command=self.host)
-        self._host_button.grid(row=4, column=2, padx=10, pady=20, sticky='ew')
+        self._host_button.grid(row=4, columnspan=3, pady=20, sticky='ew')
 
-    def validate(self):
+        self._connect_label = Label(self, text='Existing servers')
+        self._connect_label.grid(row=5, columnspan=3, pady=40)
+
+        self._servers_list = Listbox(self, listvariable=self._servers_var)
+        self._servers_list.grid(row=6, columnspan=3, ipadx=10, ipady=10)
+
+        self._button_continue = Button(self, text='Connect', command=self.connect)
+        self._button_continue.grid(row=7, columnspan=3, pady=20, sticky='ew')
+
+    def set_servers(self, servers):
+        self._servers = servers
+        self._servers_var.set(' '.join(servers))
+
+    def host(self):
         self.address = self._address_entry.get()
         self.port = self._port_entry.get()
         if re.match('^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$', self.address) is None:
             tkMessageBox.showinfo('IP', 'Please check the validity of IP')
-            return False
+            return
         if not self.port or 1024 > int(self.port) or int(self.port) > 65535:
             tkMessageBox.showinfo('Port', 'Please check the validity of the port')
-            return False
-        return True
-
-    def host(self):
-        if self.validate():
-            self.event_generate(HOST)
+            return
+        self.event_generate(HOST)
 
     def connect(self):
         """
@@ -87,5 +97,11 @@ class Connect(Frame):
         checks whether they are valid
         if they are, connects user to the game
         """
-        if self.validate():
-            self.event_generate(CONNECT)
+        selection = self._servers_list.curselection()
+        if not len(selection):
+            tkMessageBox.showerror("No room selected", "Please select a room")
+            return
+        server = self._servers[selection[0]]
+        print(server)
+        self.address, self.port = server.split(':')
+        self.event_generate(CONNECT)
