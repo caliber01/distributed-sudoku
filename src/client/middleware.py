@@ -1,8 +1,9 @@
 import client.events as events
 from common.queuelistener import QueueListener, handler
-from threading import Thread
+from threading import Thread, Event
 from common.errors import *
 import logging
+from server.main import serve
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +16,7 @@ class Middleware(QueueListener):
     Class to react on GUI events, call networking requests, notify GUI about new state
     Runs in separate thread
     """
-    def __init__(self, requests_queue, gui_queue, host):
+    def __init__(self, requests_queue, gui_queue, host, server_type):
         """
         :param requests_queue: queue to subscribe to events (Subscription done in Listener baseclass)
         :param gui_queue: queue to publish events for GUI
@@ -25,10 +26,13 @@ class Middleware(QueueListener):
         self._gui_queue = gui_queue
         self._session = {}
         self._is_running = True
+        self._server_type = server_type
 
         self._host = host
         self._thread = Thread(target=self._run)
         self._thread.start()
+        self._server_thread = None
+        self._server_shutdown_event = Event()
 
     def _run(self):
         """
@@ -41,6 +45,7 @@ class Middleware(QueueListener):
         logger.info('Shutting down Logic')
         self.in_queue.publish(QUIT)
         self._host.shutdown()
+        self._server_shutdown_event.set()
 
     @handler(QUIT)
     def quit(self):
@@ -62,6 +67,12 @@ class Middleware(QueueListener):
             self._gui_queue.publish(events.ERROR_CONNECTING_TO_SERVER)
             return
         self._gui_queue.publish(events.CONNECTED_TO_SERVER)
+
+    @handler(events.HOST)
+    def host_locally(self, server):
+        self._server_thread = Thread(target=serve, args=(self._server_type,) + server + (self._server_shutdown_event,))
+        self._server_thread.start()
+        self.connect_to_server(server)
 
     @handler(events.LOAD_ROOMS)
     def load_rooms(self):

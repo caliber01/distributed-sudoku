@@ -65,10 +65,15 @@ class UI(QueueListener):
         self.nickname_frame = None
         self.connect_frame = connect.Connect(master=self.root)
         self.connect_frame.bind(connect.CONNECT, self._handle_connect)
+        self.connect_frame.bind(connect.HOST, self._handle_host)
 
     def _handle_connect(self, event):
         self.out_queue.publish(events.CONNECT_TO_SERVER, (self.connect_frame.address, int(self.connect_frame.port)))
         self.connecting_msg = connecting.Connecting('Connecting', 'Connecting to server...')
+
+    def _handle_host(self, event):
+        self.out_queue.publish(events.HOST, (self.connect_frame.address, int(self.connect_frame.port)))
+        self.connecting_msg = connecting.Connecting('Hosting', 'Starting server...')
 
     def _handle_join(self, event):
         game_id = self.dashboard_frame.join_frame.game_id

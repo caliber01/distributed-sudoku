@@ -6,6 +6,7 @@ import common.protocol as protocol
 
 
 CONNECT = '<<connect>>'
+HOST = '<<host>>'
 
 def validate_address(address):
     """
@@ -59,21 +60,32 @@ class Connect(Frame):
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(2, weight=1)
 
-        self._button_continue = Button(self, text='Connect', command=self.submit)
+        self._button_continue = Button(self, text='Connect', command=self.connect)
         self._button_continue.grid(row=4, column=1, pady=20, sticky='ew')
 
-    def submit(self):
+        self._host_button = Button(self, text='Host', command=self.host)
+        self._host_button.grid(row=4, column=2, padx=10, pady=20, sticky='ew')
+
+    def validate(self):
+        self.address = self._address_entry.get()
+        self.port = self._port_entry.get()
+        if re.match('^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$', self.address) is None:
+            tkMessageBox.showinfo('IP', 'Please check the validity of IP')
+            return False
+        if not self.port or 1024 > int(self.port) or int(self.port) > 65535:
+            tkMessageBox.showinfo('Port', 'Please check the validity of the port')
+            return False
+        return True
+
+    def host(self):
+        if self.validate():
+            self.event_generate(HOST)
+
+    def connect(self):
         """
         gets ip address and port that user submitted
         checks whether they are valid
         if they are, connects user to the game
         """
-        self.address = self._address_entry.get()
-        self.port = self._port_entry.get()
-        if re.match('^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$', self.address) is None:
-            tkMessageBox.showinfo('IP', 'Please check the validity of IP')
-            return
-        if not self.port or 1024 > int(self.port) or int(self.port) > 65535:
-            tkMessageBox.showinfo('Port', 'Please check the validity of the port')
-            return
-        self.event_generate(CONNECT)
+        if self.validate():
+            self.event_generate(CONNECT)

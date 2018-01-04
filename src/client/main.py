@@ -21,6 +21,7 @@ from client.networking.tcp.connection import TCPConnection
 from client.networking.rpc.host import RPCHost
 from client.networking.indirect.connection import IndirectConnection
 from client.networking.manual_host import ManualHost
+from server.server_types import *
 import logging
 
 
@@ -35,16 +36,19 @@ if __name__ == '__main__':
     if arguments['--tcp']:
         logger.info('Using TCP')
         host = ManualHost(TCPConnection(gui_queue))
+        server_type = TCP
     elif arguments['--rpc']:
         logger.info('Using RPC')
         host = RPCHost(gui_queue)
+        server_type = RPC
     elif arguments['--indirect']:
         logger.info('Using Indirect Communication')
         host = ManualHost(IndirectConnection(gui_queue))
+        server_type = INDIRECT
     else:
         raise ValueError()
 
-    middleware = Middleware(requests_queue, gui_queue, host)
+    middleware = Middleware(requests_queue, gui_queue, host, server_type)
     ui = UI(gui_queue, requests_queue)
 
     ui.render_welcome()

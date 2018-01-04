@@ -16,13 +16,16 @@ class TCPServerConnection(ServerConnection):
         self.ip = ip
         self.port = port
 
-    def accept_connections(self):
+    def accept_connections(self, shutdown_event):
         logger.debug('Server socket created, descriptor %d' % self.s.fileno())
         self.s.bind((self.ip, self.port))
         logger.debug('Server socket bound on %s:%d' % self.s.getsockname())
         logger.info('Accepting requests on TCP %s:%d' % self.s.getsockname())
         self.s.listen(10000)
+        self.s.settimeout(5)
         while True:
+            if shutdown_event.is_set():
+                break
             try:
                 logger.debug('Awaiting requests ...')
                 client_socket, endpoint = self.s.accept()
@@ -31,6 +34,8 @@ class TCPServerConnection(ServerConnection):
                 client_handler = ClientHandler(self.room_manager)
                 client = ProtocolClientProxy(client_handler, connection)
                 self.room_manager.add_client(client)
+            except socket.timeout:
+                continue
             except:
                 logger.exception('Exception occurs in main thread')
                 break

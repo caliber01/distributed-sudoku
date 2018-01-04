@@ -20,6 +20,22 @@ ___VENDOR = 'Copyright (c) Anton Potapchuk, Diana Grigoryan, Yevgenia Krivenko, 
 def __info():
     return '%s version %s (%s) %s' % (___NAME, ___VER, ___BUILT, ___VENDOR)
 
+
+def serve(server_type, addr=DEFAULT_SERVER_INET_ADDR, port=DEFAULT_PORT, shutdown_event=None):
+    room_manager = RoomManager()
+
+    if server_type == TCP:
+        server_connection = TCPServerConnection(addr, int(port), room_manager)
+    elif server_type == RPC:
+        server_connection = RPCServerConnection(addr, int(port), room_manager)
+    elif server_type == INDIRECT:
+        server_connection = None
+    else:
+        raise ValueError()
+
+    server_connection.accept_connections(shutdown_event)
+
+
 if __name__ == '__main__':
     parser = ArgumentParser(description=__info())
     parser.add_argument('-l', '--listenaddr', help='Bind server socket to INET address, defaults to %s' % DEFAULT_SERVER_INET_ADDR, default=DEFAULT_SERVER_INET_ADDR)
@@ -34,17 +50,5 @@ if __name__ == '__main__':
 
     # Starting server
     LOG.info('%s version %s started ...' % (___NAME, ___VER))
-
-    room_manager = RoomManager()
-
     LOG.info('Using {}'.format(args.type))
-    if args.type == TCP:
-        server_connection = TCPServerConnection(args.listenaddr, int(args.listenport), room_manager)
-    elif args.type == RPC:
-        server_connection = RPCServerConnection(args.listenaddr, int(args.listenport), room_manager)
-    elif args.type == INDIRECT:
-        server_connection = None
-    else:
-        raise ValueError()
-
-    server_connection.accept_connections()
+    serve(args.type, args.listenaddr, args.listenport)

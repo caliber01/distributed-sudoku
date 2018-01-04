@@ -35,16 +35,23 @@ class RPCServerConnection(ServerConnection):
         self.ip = ip
         self.port = port
 
-    def accept_connections(self):
+    def accept_connections(self, shutdown_event):
         handler = ConnectionsHandler(self.room_manager)
         endpoint = (self.ip, self.port)
         server = SimpleXMLRPCServer(endpoint, requestHandler=RPCHandler, allow_none=True)
         server.register_introspection_functions()
         server.register_instance(handler)
-        try:
+        if shutdown_event is None:
             server.serve_forever()
-        except KeyboardInterrupt:
-            print("Ctrl+C")
-        finally:
-            server.shutdown()
-            server.server_close()
+        else:
+            server.timeout = 5
+            while True:
+                if shutdown_event.is_set():
+                    server.shutdown()
+                    return
+                try:
+                    server.handle_request()
+                except socket.timeout:
+                    continue
+
+
