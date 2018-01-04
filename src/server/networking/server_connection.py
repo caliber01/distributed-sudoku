@@ -1,3 +1,3 @@
 class ServerConnection(object):
-    def accept_connections(self, on_connection):
+    def accept_connections(self):
         raise NotImplementedError()

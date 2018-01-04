@@ -41,7 +41,6 @@ class ClientHandler(object):
         room = self.room_manager.create_room(name, max_users)
         self.room_manager.add_to_room(room.id, self.id)
         self.room = room
-        print("room created %s %d" % (room.name, room.max_users))
         return {"name": room.name, "max": room.max_users}
 
     def get_available_rooms(self):

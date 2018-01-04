@@ -1,8 +1,6 @@
-from server.server_obj import Server
 from server.networking.protocol.tcp.server_connection import TCPServerConnection
 from server.networking.rpc.server_connection import RPCServerConnection
 from server.room_manager import RoomManager
-from server.client_handler import ClientHandler
 from server.server_types import *
 from common.protocol import DEFAULT_PORT, DEFAULT_SERVER_INET_ADDR
 from argparse import ArgumentParser
@@ -39,17 +37,14 @@ if __name__ == '__main__':
 
     room_manager = RoomManager()
 
-    def client_handler_factory():
-        return ClientHandler(room_manager)
-
+    LOG.info('Using {}'.format(args.type))
     if args.type == TCP:
-        server_connection = TCPServerConnection(args.listenaddr, int(args.listenport), client_handler_factory)
+        server_connection = TCPServerConnection(args.listenaddr, int(args.listenport), room_manager)
     elif args.type == RPC:
-        server_connection = RPCServerConnection(args.listenaddr, int(args.listenport), client_handler_factory)
+        server_connection = RPCServerConnection(args.listenaddr, int(args.listenport), room_manager)
     elif args.type == INDIRECT:
         server_connection = None
     else:
         raise ValueError()
 
-    server = Server(server_connection, room_manager)
-    server.run()
+    server_connection.accept_connections()

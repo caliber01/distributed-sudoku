@@ -16,7 +16,7 @@ class RPCHost(Host):
     def connect(self, server):
         self.host = ServerProxy("http://%s:%d" % server)
         self.server_port = self.host.connect(socket.gethostbyname(socket.gethostname()))
-        self.host = ServerProxy("http://%s:%d" % (server[0], self.server_port))
+        self.host = ServerProxy("http://%s:%d" % (server[0], self.server_port), allow_none=True)
         self.player = Player(self.gui_queue)
         self.player.start()
         self.host.open_notifications_connection(self.player.get_address())
@@ -25,17 +25,13 @@ class RPCHost(Host):
         self.host.set_name(name)
 
     def load_rooms(self):
-        return self.host.get_available_rooms()
+        return self.host.get_available_rooms()['rooms']
 
     def join_game(self, id):
-        code, args = self.host.join_to_room(id)
-        if code != protocol.RESPONSE_OK:
-            raise ValueError()
-        return args
+        return self.host.join_to_room(id)
 
     def create_room(self, name, max_users):
-        code, args = self.host.create_room(name, max_users)
-        return args
+        return self.host.create_room(name, max_users)
 
     def cell_edited(self, x, y, prev_value, new_value):
         return self.host.set_sudoku_value(x, y, new_value, prev_value)
@@ -45,5 +41,3 @@ class RPCHost(Host):
 
     def shutdown(self):
         self.host.terminate()
-        self.player.shutdown()
-        self.player.server_close()

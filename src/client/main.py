@@ -21,6 +21,10 @@ from client.networking.tcp.connection import TCPConnection
 from client.networking.rpc.host import RPCHost
 from client.networking.indirect.connection import IndirectConnection
 from client.networking.manual_host import ManualHost
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 if __name__ == '__main__':
@@ -29,10 +33,13 @@ if __name__ == '__main__':
     gui_queue = EventQueue()
 
     if arguments['--tcp']:
+        logger.info('Using TCP')
         host = ManualHost(TCPConnection(gui_queue))
     elif arguments['--rpc']:
+        logger.info('Using RPC')
         host = RPCHost(gui_queue)
     elif arguments['--indirect']:
+        logger.info('Using Indirect Communication')
         host = ManualHost(IndirectConnection(gui_queue))
     else:
         raise ValueError()

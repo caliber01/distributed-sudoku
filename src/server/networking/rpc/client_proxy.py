@@ -1,5 +1,5 @@
 import threading
-from SimpleXMLRPCServer import SimpleXMLRPCServer
+from common.rpc import CustomXMLRPCServer
 from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler
 from xmlrpclib import ServerProxy
 import logging
@@ -22,26 +22,30 @@ class Host():
         player = ServerProxy("http://%s:%d" % (self.client_ip, port))
         self.client_proxy.set_player(player)
 
-    def leave_room_remove(self, **kwargs):
-        return self.client.leave_room_remove(**kwargs)
+    def leave_room_remove(self, *args):
+        return self.client.leave_room_remove(*args)
 
-    def set_sudoku_value(self, **kwargs):
-        return self.client.set_sudoku_value(**kwargs)
+    def set_sudoku_value(self, *args):
+        return self.client.set_sudoku_value(*args)
 
-    def set_name(self, **kwargs):
-        return self.client.set_name(**kwargs)
+    def set_name(self, *args):
+        return self.client.set_name(*args)
 
-    def join_to_room(self, **kwargs):
-        return self.client.join_to_room(**kwargs)
+    def join_to_room(self, *args):
+        return self.client.join_to_room(*args)
 
-    def create_room(self, **kwargs):
-        return self.client.create_room(**kwargs)
+    def create_room(self, *args):
+        return self.client.create_room(*args)
 
-    def get_available_rooms(self, **kwargs):
-        return self.client.get_available_rooms(**kwargs)
+    def get_available_rooms(self, *args):
+        return self.client.get_available_rooms(*args)
 
-    def leave_room(self, **kwargs):
-        return self.client.leave_room(**kwargs)
+    def leave_room(self, *args):
+        return self.client.leave_room(*args)
+
+    def terminate(self):
+        self.client_proxy.player.terminate()
+        self.client.leave_room_remove()
 
 
 # TODO stop
@@ -51,9 +55,9 @@ class RPCClientProxy(ClientProxy):
         self.client = client
         self.client_ip = client_ip
         self.player = None
-        self.host = Host(client_ip, self, client)
-        self.server = SimpleXMLRPCServer(('0.0.0.0', 0))
+        self.server = CustomXMLRPCServer(('0.0.0.0', 0), allow_none=True)
         self.server.register_introspection_functions()
+        self.host = Host(client_ip, self, client)
         self.server.register_instance(self.host)
         self.listen_thread = None
         self.listen_thread = threading.Thread(target=self._run)
@@ -72,14 +76,9 @@ class RPCClientProxy(ClientProxy):
         return self.client.name
 
     def _run(self):
-        try:
-            logger.debug("Start listening %s:%d" % self.server.server_address)
-            self.server.serve_forever()
-        except KeyboardInterrupt:
-            print("Ctrl+C")
-        finally:
-            self.server.shutdown()
-            self.server.server_close()
+        logger.debug("Start listening %s:%d" % self.server.server_address)
+        self.server.serve_forever()
+        logger.debug('Stop listening %s:%d' % self.server.server_address)
 
     def set_player(self, player):
         self.player = player

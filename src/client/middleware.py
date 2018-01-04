@@ -58,7 +58,7 @@ class Middleware(QueueListener):
             self._host.connect(server)
             self._host.set_name(self._session['nickname'])
         except Exception as e:
-            logger.error(e)
+            logger.exception('Error connecting to server')
             self._gui_queue.publish(events.ERROR_CONNECTING_TO_SERVER)
             return
         self._gui_queue.publish(events.CONNECTED_TO_SERVER)
@@ -86,6 +86,7 @@ class Middleware(QueueListener):
     def create_room(self, name, max_users):
         try:
             room_details = self._host.create_room(name, max_users)
+            print(room_details)
             logger.info('Room created')
             self._gui_queue.publish(events.ROOM_CREATED, **room_details)
         except Exception as e:
@@ -111,7 +112,7 @@ class Middleware(QueueListener):
             self._host.leave_room()
             self._gui_queue.publish(events.ROOM_LEAVED)
         except Exception as e:
-            logger.exception('error leaving room')
+            logger.exception('nrror leaving room')
             self._gui_queue.publish(events.ERROR_OCCURRED)
 
     @handler(events.GAME_ENDED)

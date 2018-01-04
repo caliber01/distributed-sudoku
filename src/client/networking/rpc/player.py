@@ -1,5 +1,5 @@
-from SimpleXMLRPCServer import SimpleXMLRPCServer
 from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler
+from common.rpc import CustomXMLRPCServer
 import common.protocol as protocol
 from threading import Thread
 
@@ -12,18 +12,12 @@ class Player(Thread):
     def __init__(self, gui_queue):
         super(Player, self).__init__(target=self.run)
         self.gui_queue = gui_queue
-        self.server = SimpleXMLRPCServer(("0.0.0.0", 0), requestHandler=RPCHandler)
+        self.server = CustomXMLRPCServer(("0.0.0.0", 0), requestHandler=RPCHandler, allow_none=True)
         self.server.register_introspection_functions()
         self.server.register_instance(self)
 
     def run(self):
-        try:
-            self.server.serve_forever()
-        except KeyboardInterrupt:
-            print("Ctrl+C")
-        finally:
-            self.server.shutdown()
-            self.server.server_close()
+        self.server.serve_forever()
 
     def start_game(self, args):
         self.gui_queue.publish(protocol.START_GAME, **args)
@@ -43,3 +37,7 @@ class Player(Thread):
 
     def get_address(self):
         return self.server.server_address[1]
+
+    def terminate(self):
+        self.server.shutdown()
+
