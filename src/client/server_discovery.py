@@ -29,7 +29,7 @@ class ServerDiscovery(Thread):
     def _run(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        sock.bind((protocol.MCAST_GRP, protocol.MCAST_PORT))
+        sock.bind(('', protocol.MCAST_PORT))
         mreq = struct.pack("4sl", socket.inet_aton(protocol.MCAST_GRP), socket.INADDR_ANY)
 
         sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
