@@ -97,3 +97,6 @@ class RPCClientProxy(ClientProxy):
 
     def shutdown(self):
         self.server.shutdown()
+
+    def leave_room_remove(self):
+        self.client.leave_room_remove()

@@ -79,3 +79,6 @@ class ProtocolClientProxy(ClientProxy, Listener):
         # TODO Process error
         if response['type'] != RESPONSE_OK:
             return
+
+    def leave_room_remove(self):
+        self.client.leave_room_remove()

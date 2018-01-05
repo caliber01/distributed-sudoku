@@ -1,6 +1,3 @@
-import netifaces
-
-
 DEFAULT_PORT = 7878
 DEFAULT_SERVER_INET_ADDR = "127.0.0.1"
 
