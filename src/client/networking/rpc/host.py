@@ -41,4 +41,7 @@ class RPCHost(Host):
 
     def shutdown(self):
         if self.host is not None:
+            self.host.leave_room()
             self.host.terminate()
+        self.player.terminate()
+        print('Shut down host')

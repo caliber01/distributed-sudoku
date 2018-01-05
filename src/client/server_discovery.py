@@ -47,8 +47,8 @@ class ServerDiscovery(Thread):
                 logger.info('Received server URI: {}'.format(uri))
             except socket.timeout:
                 continue
+        logger.info('Stopped server discovery')
 
     def shutdown(self):
         if self._shutdown_event:
             self._shutdown_event.set()
-            logger.info('Stop server discovery')

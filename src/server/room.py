@@ -50,15 +50,17 @@ class Room(object):
         """
         deletes user from the game
         """
-        with self.lock:
-            if client_id in [user.id for user in self.users]:
+        if client_id in [user.id for user in self.users]:
+            with self.lock:
                 self.users = [user for user in self.users if user.id != client_id]
-                self.__people_changed_notification()
-            if len(self.users) == 1:
-                scores = [(self.users[0].name, self.__scores[self.users[0].id])]
-                for user in self.users:
+            self.__people_changed_notification()
+        if len(self.users) == 1:
+            scores = [(self.users[0].name, self.__scores[self.users[0].id])]
+            for user in self.users:
+                if user.id is not client_id:
                     user.notify_sudoku_solved(scores=scores)
-                self.users[0].leave_room_remove()
+        if len(self.users) == 1:
+            self.users[0].leave_room_remove()
 
     def set_value(self, user_id, x, y, value, prev):
         with self.lock:
@@ -69,16 +71,17 @@ class Room(object):
             else:
                 self.__scores[user_id] -= 1
             self.__sudoku.unsolved[x][y] = value
-            for user in self.users:
-                if user.id is not user_id:
-                    user.notify_sudoku_changed(x=x, y=y, value=value)
 
-            if self.__is_sudoku_solved():
-                score = []
-                for user in self.users:
-                    score.append((user.name, self.__scores[user.id]))
-                for user in self.users:
-                    user.notify_sudoku_solved(scores=score)
+        for user in self.users:
+            if user.id is not user_id:
+                user.notify_sudoku_changed(x=x, y=y, value=value)
+
+        if self.__is_sudoku_solved():
+            score = []
+            for user in self.users:
+                score.append((user.name, self.__scores[user.id]))
+            for user in self.users:
+                user.notify_sudoku_solved(scores=score)
 
     def __is_sudoku_solved(self):
         for i in range(9):
